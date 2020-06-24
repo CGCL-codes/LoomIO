@@ -2131,7 +2131,6 @@ void ECBackend::objects_read_async(
 {
   dout(0) << " mydebug:: obj_read" << "#"<<hoid.oid.name<<","<<get_parent()->whoami()<<"#" << dendl;
 
-  
   map<hobject_t,std::list<boost::tuple<uint64_t, uint64_t, uint32_t> > >
     reads;
 
