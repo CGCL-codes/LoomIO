@@ -783,7 +783,7 @@ bool ECBackend::_handle_message(
     reply->trace = _op->pg_trace;
     get_parent()->send_message_osd_cluster(
       op->op.from.osd, reply, get_parent()->get_epoch());
-    dout(0) << " mydebug:" << "#sub_read_op_finish," << ceph_clock_now()<<"#" << dendl;
+    dout(0) << " mydebug::" << "#sub_read_op_finish," << ceph_clock_now()<<"#" << dendl;
     return true;
   }
   case MSG_OSD_EC_READ_REPLY: {
