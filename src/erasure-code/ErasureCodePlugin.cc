@@ -142,10 +142,10 @@ int ErasureCodePluginRegistry::load(const std::string &plugin_name,
   if (erasure_code_version == NULL)
     erasure_code_version = an_older_version;
   if (erasure_code_version() != string(CEPH_GIT_NICE_VER)) {
-    *ss << "expected plugin " << fname << " version " << CEPH_GIT_NICE_VER
+    *ss << "mydebug: ignore, expected plugin " << fname << " version " << CEPH_GIT_NICE_VER
 	<< " but it claims to be " << erasure_code_version() << " instead";
-    dlclose(library);
-    return -EXDEV;
+    //dlclose(library);
+    //return -EXDEV;
   }
 
   int (*erasure_code_init)(const char *, const char *) =
