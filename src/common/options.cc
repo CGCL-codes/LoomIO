@@ -1614,11 +1614,11 @@ std::vector<Option> get_global_options() {
     .set_description(""),
 
     Option("objecter_inflight_op_bytes", Option::TYPE_UINT, Option::LEVEL_ADVANCED)
-    .set_default(100_M)
+    .set_default(10000_M)
     .set_description(""),
 
     Option("objecter_inflight_ops", Option::TYPE_UINT, Option::LEVEL_ADVANCED)
-    .set_default(1024)
+    .set_default(10240)
     .set_description(""),
 
     Option("objecter_completion_locks_per_session", Option::TYPE_UINT, Option::LEVEL_ADVANCED)
