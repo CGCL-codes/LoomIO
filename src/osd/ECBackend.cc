@@ -799,7 +799,6 @@ bool ECBackend::_handle_message(
 
     Message* m = _op->get_req();
     utime_t p_time =  m->get_recv_stamp() - op->op.send_time;
-
     dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<"#"<<dendl;
     //<<","<<queue_size<<","<<wait_for_service_time<<","<<disk_read_time<<
     RecoveryMessages rm;
