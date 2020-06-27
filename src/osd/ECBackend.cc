@@ -797,7 +797,7 @@ bool ECBackend::_handle_message(
     MOSDECSubOpReadReply *op = static_cast<MOSDECSubOpReadReply*>(
       _op->get_nonconst_req());
 
-    Message* m = _op->get_req();
+    const Message* m = _op->get_req();
     utime_t p_time =  m->get_recv_stamp() - op->op.send_time;
     dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<"#"<<dendl;
     //<<","<<queue_size<<","<<wait_for_service_time<<","<<disk_read_time<<
