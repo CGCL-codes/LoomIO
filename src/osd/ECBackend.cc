@@ -779,6 +779,11 @@ bool ECBackend::_handle_message(
     reply->pgid = get_parent()->primary_spg_t();
     reply->map_epoch = get_parent()->get_epoch();
     reply->min_epoch = get_parent()->get_interval_start_epoch();
+
+    //reply->op.wait_for_service_time = _op->get_dequeued_time() - _op->get_enqueued_time(); 
+		//reply->op.queue_size = _op->get_queue_size_when_enqueued();
+		reply->op.send_time = op->op.send_time;
+
     handle_sub_read(op->op.from, op->op, &(reply->op), _op->pg_trace);
     reply->trace = _op->pg_trace;
     get_parent()->send_message_osd_cluster(
@@ -791,6 +796,12 @@ bool ECBackend::_handle_message(
     // buffers.  It does not conflict with ECSubReadReply operator<<.
     MOSDECSubOpReadReply *op = static_cast<MOSDECSubOpReadReply*>(
       _op->get_nonconst_req());
+
+    Message* m = _op->get_req();
+    utime_t p_time =  m->get_recv_stamp() - op->op.send_time;
+
+    dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<"#"<<dendl;
+    //<<","<<queue_size<<","<<wait_for_service_time<<","<<disk_read_time<<
     RecoveryMessages rm;
     handle_sub_read_reply(op->op.from, op->op, &rm, _op->pg_trace);
     dispatch_recovery_messages(rm, priority);
@@ -997,7 +1008,7 @@ void ECBackend::handle_sub_read(
 {
   trace.event("handle sub read");
   shard_id_t shard = get_parent()->whoami_shard().shard;
-  for(auto i = op.to_read.begin();
+  for(auto i = op.to_read.begin();  //to_read 是一个map，保存了每个object需要读取的偏移列表
       i != op.to_read.end();
       ++i) {
     int r = 0;
@@ -1731,6 +1742,7 @@ void ECBackend::do_read_op(ReadOp &op)
       msg->trace.init("ec sub read", nullptr, &op.trace);
       msg->trace.keyval("shard", i->first.shard.id);
     }
+    msg->op.send_time = ceph_clock_now();
     get_parent()->send_message_osd_cluster(
       i->first.osd,
       msg,
