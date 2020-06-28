@@ -195,10 +195,12 @@ ECBackend::ECBackend(
   ObjectStore *store,
   CephContext *cct,
   ErasureCodeInterfaceRef ec_impl,
-  uint64_t stripe_width)
+  uint64_t stripe_width,
+  OSDService *o)
   : PGBackend(cct, pg, store, coll, ch),
     ec_impl(ec_impl),
-    sinfo(ec_impl->get_data_chunk_count(), stripe_width) {
+    sinfo(ec_impl->get_data_chunk_count(), stripe_width),
+    osd(o) {
   assert((ec_impl->get_data_chunk_count() *
 	  ec_impl->get_chunk_size(stripe_width)) == stripe_width);
 }
@@ -1026,7 +1028,7 @@ void ECBackend::handle_sub_read(
       utime_t delay_interval;
 			delay_interval.tv.tv_sec = 0;
       //process_interval.tv.tv_nsec = 40000000;
-			delay_interval.tv.tv_nsec = cct->_conf->basic_delay_time * cct->_conf->delay_factor;
+			delay_interval.tv.tv_nsec = osd->basic_delay_time * osd->delay_factor;
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();

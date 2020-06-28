@@ -614,7 +614,8 @@ typedef ceph::shared_ptr<const OSDMap> OSDMapRef;
      coll_t coll,
      ObjectStore::CollectionHandle &ch,
      ObjectStore *store,
-     CephContext *cct);
+     CephContext *cct,
+     OSDService *o);
 };
 
 #endif

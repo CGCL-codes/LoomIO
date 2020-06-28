@@ -34,6 +34,8 @@ struct ECSubReadReply;
 struct RecoveryMessages;
 class ECBackend : public PGBackend {
 public:
+  OSDService *osd;
+
   RecoveryHandle *open_recovery_op() override;
 
   void run_recovery_op(
