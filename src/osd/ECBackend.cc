@@ -1028,10 +1028,12 @@ void ECBackend::handle_sub_read(
       utime_t delay_interval;
 			delay_interval.tv.tv_sec = 0;
       //delay_interval.tv.tv_nsec = 40000000;
-			delay_interval.tv.tv_nsec = osd->basic_delay_time;
+			delay_interval.tv.tv_nsec = osd->basic_delay_time * osd->delay_factor;
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();
+      dout(0)<< ": mydebug: basic_delay_time="<<osd->basic_delay_time <<dendl;
+      dout(0)<< ": mydebug: delay_factor="<<osd->delay_factor <<dendl;
       dout(0)<< ": mydebug: delay_time="<<delay_end_time - delay_start_time <<dendl;
 
       if (r < 0) {
