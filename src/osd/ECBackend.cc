@@ -1019,6 +1019,16 @@ void ECBackend::handle_sub_read(
 	j->get<0>(),
 	j->get<1>(),
 	bl, j->get<2>());
+      //for balance generator
+      utime_t delay_interval;
+			delay_interval.tv.tv_sec = 0;
+      //process_interval.tv.tv_nsec = 40000000;
+			delay_interval.tv.tv_nsec = cct->basic_delay_time * cct->delay_factor;
+			utime_t delay_start_time = ceph_clock_now(); 
+			while(ceph_clock_now() - delay_start_time < delay_interval); 
+			utime_t delay_end_time = ceph_clock_now();
+      dout(0)<< ": mydebug: delay_time="<<delay_end_time - delay_start_time <<dendl;
+
       if (r < 0) {
 	get_parent()->clog_error() << "Error " << r
 				   << " reading object "

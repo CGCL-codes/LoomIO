@@ -2371,6 +2371,15 @@ std::vector<Option> get_global_options() {
     .set_default(10)
     .set_description(""),
 
+    //for imbalance-generator
+    Option("basic_delay_time", Option::TYPE_INT, Option::LEVEL_ADVANCED)
+    .set_default(10)
+    .set_description("basic_delay_time"),
+
+    Option("imbalance_pattern", Option::TYPE_INT, Option::LEVEL_ADVANCED)
+    .set_default(0)
+    .set_description("0=no,1=normal,2=zpif"),
+
     Option("osd_backfill_scan_min", Option::TYPE_INT, Option::LEVEL_ADVANCED)
     .set_default(64)
     .set_description(""),

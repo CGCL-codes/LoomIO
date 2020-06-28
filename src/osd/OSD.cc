@@ -276,7 +276,9 @@ OSDService::OSDService(OSD *osd) :
   cur_ratio(0),
   epoch_lock("OSDService::epoch_lock"),
   boot_epoch(0), up_epoch(0), bind_epoch(0),
-  is_stopping_lock("OSDService::is_stopping_lock")
+  is_stopping_lock("OSDService::is_stopping_lock"),
+  basic_delay_time(cct->_conf->basic_delay_time),
+  delay_factor(0)
 #ifdef PG_DEBUG_REFS
   , pgid_lock("OSDService::pgid_lock")
 #endif
@@ -10366,6 +10368,30 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
 			     const std::set <std::string> &changed)
 {
   Mutex::Locker l(osd_lock);
+
+  //for imbalance-generator
+  if (changed.count("basic_delay_time")) {
+    service.basic_delay_time = cct->_conf->basic_delay_time;
+  }
+  if (changed.count("imbalance_pattern")) {
+    int pattern = imbalance_pattern;
+    int my_id = service->whoami;
+    switch(pattern){
+      case 0: //no_delay
+        service.delay_factor = 0;
+        break;
+      case 1: //normal distribution
+        service.delay_factor = my_id;
+        break;
+      case 2: //zpif
+        service.delay_factor = 2*my_id;
+        break;
+      default:
+        service.delay_factor = 0;
+        break;
+    }
+  }
+
   if (changed.count("osd_max_backfills")) {
     service.local_reserver.set_max(cct->_conf->osd_max_backfills);
     service.remote_reserver.set_max(cct->_conf->osd_max_backfills);
