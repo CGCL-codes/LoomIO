@@ -715,8 +715,8 @@ OPTION(osd_read_ec_check_for_errors, OPT_BOOL) // return error if any ec shard h
 OPTION(osd_recover_clone_overlap_limit, OPT_INT)
 
 //for load-imbalance generator
-OPTION(basic_delay_time, OPT_INT) //usec
-OPTION(imbalance_pattern, OPT_INT)
+OPTION(osd_basic_delay_time, OPT_INT) //usec
+OPTION(osd_imbalance_pattern, OPT_INT)
 
 OPTION(osd_backfill_scan_min, OPT_INT)
 OPTION(osd_backfill_scan_max, OPT_INT)

@@ -276,8 +276,8 @@ OSDService::OSDService(OSD *osd) :
   cur_ratio(0),
   epoch_lock("OSDService::epoch_lock"),
   boot_epoch(0), up_epoch(0), bind_epoch(0),
-  is_stopping_lock("OSDService::is_stopping_lock")
-  //basic_delay_time(cct->_conf->basic_delay_time),
+  is_stopping_lock("OSDService::is_stopping_lock"),
+  basic_delay_time(cct->_conf->osd_basic_delay_time)
   //delay_factor(0)
 #ifdef PG_DEBUG_REFS
   , pgid_lock("OSDService::pgid_lock")
@@ -10370,11 +10370,11 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
   Mutex::Locker l(osd_lock);
 
   //for imbalance-generator
-  if (changed.count("basic_delay_time")) {
-    //service.basic_delay_time = cct->_conf->basic_delay_time;
+  if (changed.count("osd_basic_delay_time")) {
+    service.basic_delay_time = cct->_conf->osd_basic_delay_time;
   }
-  if (changed.count("imbalance_pattern")) {
-    int pattern = cct->_conf->imbalance_pattern;
+  if (changed.count("osd_imbalance_pattern")) {
+    int pattern = cct->_conf->osd_imbalance_pattern;
     int my_id = service.whoami;
     switch(pattern){
       case 0: //no_delay
