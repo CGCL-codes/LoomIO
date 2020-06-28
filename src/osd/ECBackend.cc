@@ -799,7 +799,7 @@ bool ECBackend::_handle_message(
 
     const Message* m = _op->get_req();
     utime_t p_time =  m->get_recv_stamp() - op->op.send_time;
-    dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<"#"<<dendl;
+    dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<","<<op->op.disk_read_time<<"#"<<dendl;
     //<<","<<queue_size<<","<<wait_for_service_time<<","<<disk_read_time<<
     RecoveryMessages rm;
     handle_sub_read_reply(op->op.from, op->op, &rm, _op->pg_trace);
@@ -1013,6 +1013,9 @@ void ECBackend::handle_sub_read(
     int r = 0;
     for (auto j = i->second.begin(); j != i->second.end(); ++j) {
       bufferlist bl;
+      utime_t start_read_time;
+			utime_t end_read_time;
+			start_read_time = ceph_clock_now();
       r = store->read(
 	ch,
 	ghobject_t(i->first, ghobject_t::NO_GEN, shard),
@@ -1023,7 +1026,7 @@ void ECBackend::handle_sub_read(
       utime_t delay_interval;
 			delay_interval.tv.tv_sec = 0;
       //process_interval.tv.tv_nsec = 40000000;
-			delay_interval.tv.tv_nsec = cct->basic_delay_time * cct->delay_factor;
+			delay_interval.tv.tv_nsec = cct->_conf->basic_delay_time * cct->_conf->delay_factor;
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();
@@ -1037,6 +1040,8 @@ void ECBackend::handle_sub_read(
 		<< " reading " << i->first << dendl;
 	goto error;
       } else {
+        end_read_time = ceph_clock_now();
+        reply->disk_read_time = end_read_time -start_read_time;
         dout(20) << __func__ << " read request=" << j->get<1>() << " r=" << r << " len=" << bl.length() << dendl;
 	reply->buffers_read[i->first].push_back(
 	  make_pair(
