@@ -10374,8 +10374,8 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
     service.basic_delay_time = cct->_conf->basic_delay_time;
   }
   if (changed.count("imbalance_pattern")) {
-    int pattern = imbalance_pattern;
-    int my_id = service->whoami;
+    int pattern = cct->_conf->imbalance_pattern;
+    int my_id = service.whoami;
     switch(pattern){
       case 0: //no_delay
         service.delay_factor = 0;
