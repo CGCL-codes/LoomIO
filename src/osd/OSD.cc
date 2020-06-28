@@ -277,7 +277,7 @@ OSDService::OSDService(OSD *osd) :
   epoch_lock("OSDService::epoch_lock"),
   boot_epoch(0), up_epoch(0), bind_epoch(0),
   is_stopping_lock("OSDService::is_stopping_lock"),
-  basic_delay_time(cct->_conf->osd_basic_delay_time)
+  //basic_delay_time(cct->_conf->osd_basic_delay_time)
   //delay_factor(0)
 #ifdef PG_DEBUG_REFS
   , pgid_lock("OSDService::pgid_lock")
