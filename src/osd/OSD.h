@@ -348,8 +348,8 @@ class OSD;
 class OSDService {
 public:
   //for imbalance-generator
-  int basic_delay_time;
-  int delay_factor;
+  //int basic_delay_time;
+  //int delay_factor;
 
   OSD *osd;
   CephContext *cct;

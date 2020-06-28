@@ -1027,8 +1027,8 @@ void ECBackend::handle_sub_read(
       //for balance generator
       utime_t delay_interval;
 			delay_interval.tv.tv_sec = 0;
-      //process_interval.tv.tv_nsec = 40000000;
-			delay_interval.tv.tv_nsec = osd->basic_delay_time * osd->delay_factor;
+      delay_interval.tv.tv_nsec = 40000000;
+			//delay_interval.tv.tv_nsec = osd->basic_delay_time * osd->delay_factor;
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();
