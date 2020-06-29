@@ -10383,7 +10383,11 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
         service.delay_factor = 0;
         break;
       case 1: //normal distribution
-        service.delay_factor = my_id;
+        if(my_id == 6 || my_id == 7){
+          service.delay_factor = 7;
+        }else{
+          service.delay_factor = 0;
+        }
         break;
       case 2: //zpif
         service.delay_factor = 2*my_id;
