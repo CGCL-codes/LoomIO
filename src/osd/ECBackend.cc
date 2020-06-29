@@ -1605,6 +1605,18 @@ int ECBackend::get_min_avail_to_read_shards(
   set<pg_shard_t> error_shards;
 
   get_all_avail_shards(hoid, error_shards, have, shards, for_recovery);
+  
+  //straggler = 6 & 7
+  for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
+		 i != shards.end();
+		 ++i)
+	{
+    if((i->second).osd == 6 || (i->second).osd == 7){
+      dout(0) << ": mydebug: shards "<< i->first <<" have straggler osd "<<(i->second).osd << dendl;
+      have.erase(i->first);
+      dout(0) << ": mydebug: erase " << i->first << " from have" << dendl;
+    }	
+	}
 
   set<int> need;
   int r = ec_impl->minimum_to_decode(want, have, &need);
