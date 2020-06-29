@@ -1286,6 +1286,7 @@ void ECBackend::handle_sub_read_reply(
   if (rop.in_progress.empty() || is_complete == rop.complete.size()) {
     dout(20) << __func__ << " Complete: " << rop << dendl;
     rop.trace.event("ec read complete");
+    dout(0)<<" :obj_end#"<<op.buffers_read.begin()->first.oid.name<<","<<ceph_clock_now()<<","<<osd->whoami<<"#"<<dendl;
     complete_read_op(rop, m);
   } else {
     dout(10) << __func__ << " readop not complete: " << rop << dendl;
@@ -2379,6 +2380,7 @@ void ECBackend::objects_read_and_reconstruct(
     obj_want_to_read.insert(make_pair(to_read.first, want_to_read));
   }
 
+  dout(0)<<" :obj_start#"<<reads.begin()->first.oid.name<<","<<ceph_clock_now()<<","<<osd->whoami<<"#"<<dendl;
   start_read_op(
     CEPH_MSG_PRIO_DEFAULT,
     obj_want_to_read,
