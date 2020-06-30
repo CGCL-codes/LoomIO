@@ -1636,7 +1636,7 @@ int ECBackend::get_min_avail_to_read_shards(
   //   have.erase(load_of_shard[1].first);
   // }
   /****k-optimal***/
-  int *load_map = [0,1,2,3,4,5,6,7];
+  int *load_map = {0,1,2,3,4,5,6,7};
   vector<pair<shard_id_t,int>> load_of_shard;
   for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
     i != shards.end();
