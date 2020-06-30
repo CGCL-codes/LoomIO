@@ -1590,6 +1590,10 @@ void ECBackend::get_all_avail_shards(
   }
 }
 
+bool mycmp(pair<shard_id_t,int> a, pair<shard_id_t,int> b) {
+	return a.second > b.second; //降序排列，延迟大的osd放前面
+}
+
 int ECBackend::get_min_avail_to_read_shards(
   const hobject_t &hoid,
   const set<int> &want,
@@ -1607,16 +1611,45 @@ int ECBackend::get_min_avail_to_read_shards(
   get_all_avail_shards(hoid, error_shards, have, shards, for_recovery);
   
   //straggler = 6 & 7
+  // if(osd->cct->_conf->osd_imbalance_pattern != 0){
+  //   for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
+  //     i != shards.end();
+  //     ++i)
+  //   {
+  //     if((i->second).osd == 6 || (i->second).osd == 7){
+  //       dout(0) << ": mydebug: shards "<< i->first <<" have straggler osd "<<(i->second).osd << dendl;
+  //       have.erase(i->first);
+  //       dout(0) << ": mydebug: erase " << i->first << " from have" << dendl;
+  //     }	
+  //   }
+  // }else{
+  //   int *load_map = [0,1,2,3,4,5,6,7];
+  //   vector<pair<shard_id_t,int>> load_of_shard;
+  //   for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
+  //     i != shards.end();
+  //     ++i)
+  //   {
+  //     load_of_shard.push_back(make_pair(i->first, load_map[i->second.osd]));
+  //   }
+  //   sort(load_of_shard.begin(),load_of_shard.end(),mycmp);
+  //   have.erase(load_of_shard[0].first);
+  //   have.erase(load_of_shard[1].first);
+  // }
+  /****k-optimal***/
+  int *load_map = [0,1,2,3,4,5,6,7];
+  vector<pair<shard_id_t,int>> load_of_shard;
   for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
-		 i != shards.end();
-		 ++i)
-	{
-    if(osd->cct->_conf->osd_imbalance_pattern != 0 && ((i->second).osd == 6 || (i->second).osd == 7)){
-      dout(0) << ": mydebug: shards "<< i->first <<" have straggler osd "<<(i->second).osd << dendl;
-      have.erase(i->first);
-      dout(0) << ": mydebug: erase " << i->first << " from have" << dendl;
-    }	
-	}
+    i != shards.end();
+    ++i)
+  {
+    load_of_shard.push_back(make_pair(i->first, load_map[i->second.osd]));
+  }
+  sort(load_of_shard.begin(),load_of_shard.end(),mycmp);
+  have.erase(load_of_shard[0].first);
+  have.erase(load_of_shard[1].first);
+  /****k-optimal***/
+
+
 
   set<int> need;
   int r = ec_impl->minimum_to_decode(want, have, &need);
