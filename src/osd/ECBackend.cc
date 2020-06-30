@@ -1611,7 +1611,7 @@ int ECBackend::get_min_avail_to_read_shards(
 		 i != shards.end();
 		 ++i)
 	{
-    if((i->second).osd == 6 || (i->second).osd == 7){
+    if(osd->cct->_conf->osd_imbalance_pattern != 0 && ((i->second).osd == 6 || (i->second).osd == 7)){
       dout(0) << ": mydebug: shards "<< i->first <<" have straggler osd "<<(i->second).osd << dendl;
       have.erase(i->first);
       dout(0) << ": mydebug: erase " << i->first << " from have" << dendl;
