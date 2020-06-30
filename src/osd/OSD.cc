@@ -10867,14 +10867,14 @@ void OSD::ShardedOpWQ::_process(uint32_t thread_index, heartbeat_handle_d *hb)
   ShardData *sdata = shard_list[shard_index];
   assert(NULL != sdata);
 
-  int total_req = 0;
-  for(int i=0;i<num_shards;i++){
-    ShardData *temp_data = shard_list[i];
-    temp_data->sdata_op_ordering_lock.Lock();
-    total_req+=temp_data->pqueue->length();
-    temp_data->sdata_op_ordering_lock.Unlock();
-  }
-  dout(0) << " mydebug: total_req_size = " <<total_req<< dendl;
+  // int total_req = 0;
+  // for(int i=0;i<num_shards;i++){
+  //   ShardData *temp_data = shard_list[i];
+  //   temp_data->sdata_op_ordering_lock.Lock();
+  //   total_req+=temp_data->pqueue->length();
+  //   temp_data->sdata_op_ordering_lock.Unlock();
+  // }
+  // dout(0) << " mydebug: total_req_size = " <<total_req<< dendl;
 
   // peek at spg_t
   sdata->sdata_op_ordering_lock.Lock();
