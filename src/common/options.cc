@@ -5950,7 +5950,7 @@ static std::vector<Option> get_rbd_options() {
     .set_description("time in seconds for detecting a hung thread"),
 
     Option("rbd_non_blocking_aio", Option::TYPE_BOOL, Option::LEVEL_ADVANCED)
-    .set_default(true)
+    .set_default(false)
     .set_description("process AIO ops from a dispatch thread to prevent blocking"),
 
     Option("rbd_cache", Option::TYPE_BOOL, Option::LEVEL_ADVANCED)
