@@ -7031,6 +7031,12 @@ int BlueStore::_do_read(
     buffered = true;
   }
 
+  if(buffered == true){
+    dout(0) <<" my_debug"<< " buffered = ture" << dendl;
+  }else{
+    dout(0) <<" my_debug"<< " buffered = false" << dendl;
+  }
+
   if (offset + length > o->onode.size) {
     length = o->onode.size - offset;
   }

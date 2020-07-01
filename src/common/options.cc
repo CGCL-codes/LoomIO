@@ -3710,7 +3710,7 @@ std::vector<Option> get_global_options() {
     .set_description("Ratio of bluestore cache to devote to kv database (rocksdb)"),
 
     Option("bluestore_cache_autotune", Option::TYPE_BOOL, Option::LEVEL_DEV)
-    .set_default(true)
+    .set_default(false)
     .add_see_also("bluestore_cache_size")
     .add_see_also("bluestore_cache_meta_ratio")
     .set_description("Automatically tune the ratio of caches while respecting min values."),
@@ -3842,7 +3842,7 @@ std::vector<Option> get_global_options() {
     .set_description("Use copy-on-write when cloning objects (versus reading and rewriting them at clone time)"),
 
     Option("bluestore_default_buffered_read", Option::TYPE_BOOL, Option::LEVEL_ADVANCED)
-    .set_default(true)
+    .set_default(false)
     .set_safe()
     .set_description("Cache read results by default (unless hinted NOCACHE or WONTNEED)"),
 
