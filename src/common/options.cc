@@ -3690,11 +3690,13 @@ std::vector<Option> get_global_options() {
     .set_long_description("This includes data and metadata cached by BlueStore as well as memory devoted to rocksdb's cache(s)."),
 
     Option("bluestore_cache_size_hdd", Option::TYPE_UINT, Option::LEVEL_DEV)
-    .set_default(1_G)
+    //.set_default(1_G)
+    .set_default(0)
     .set_description("Default bluestore_cache_size for rotational media"),
 
     Option("bluestore_cache_size_ssd", Option::TYPE_UINT, Option::LEVEL_DEV)
-    .set_default(3_G)
+    //.set_default(3_G)
+    .set_default(0)
     .set_description("Default bluestore_cache_size for non-rotational (solid state) media"),
 
     Option("bluestore_cache_meta_ratio", Option::TYPE_FLOAT, Option::LEVEL_DEV)
