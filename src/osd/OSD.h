@@ -350,6 +350,7 @@ public:
   //for imbalance-generator
   int basic_delay_time;
   int delay_factor;
+  int k_optimal;
 
   OSD *osd;
   CephContext *cct;

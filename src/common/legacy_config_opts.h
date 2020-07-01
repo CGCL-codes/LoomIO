@@ -717,6 +717,7 @@ OPTION(osd_recover_clone_overlap_limit, OPT_INT)
 //for load-imbalance generator
 OPTION(osd_basic_delay_time, OPT_INT) //usec
 OPTION(osd_imbalance_pattern, OPT_INT)
+OPTION(osd_k_optimal, OPT_INT)
 
 OPTION(osd_backfill_scan_min, OPT_INT)
 OPTION(osd_backfill_scan_max, OPT_INT)

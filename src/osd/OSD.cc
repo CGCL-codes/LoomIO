@@ -10330,6 +10330,7 @@ const char** OSD::get_tracked_conf_keys() const
   static const char* KEYS[] = {
     "osd_basic_delay_time",
     "osd_imbalance_pattern",
+    "osd_k_optimal",
     "osd_max_backfills",
     "osd_min_recovery_priority",
     "osd_max_trimming_pgs",
@@ -10397,6 +10398,10 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
         service.delay_factor = 0;
         break;
     }
+  }
+
+  if (changed.count("osd_k_optimal")) {
+    service.k_optimal = cct->_conf->osd_k_optimal;
   }
 
   if (changed.count("osd_max_backfills")) {
