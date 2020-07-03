@@ -1410,6 +1410,8 @@ private:
 
   ThreadPool peering_tp;
   ShardedThreadPool osd_op_tp;
+  ShardedThreadPool osd_op_obj_tp;
+  ShardedThreadPool osd_op_reply_tp;
   ThreadPool remove_tp;
   ThreadPool recovery_tp;
   ThreadPool command_tp;
@@ -1880,7 +1882,7 @@ private:
       Mutex::Locker l(sdata->sdata_op_ordering_lock);
       return sdata->pqueue->empty();
     }
-  } op_shardedwq;
+  } op_shardedwq,op_obj_shardedwq,op_reply_shardedwq;
 
 
   void enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch);
@@ -2093,6 +2095,8 @@ protected:
   void wake_pg_waiters(PGRef pg) {
     assert(pg->is_locked());
     op_shardedwq.wake_pg_waiters(pg->info.pgid);
+    op_obj_shardedwq.wake_pg_waiters(pg->info.pgid);
+    op_reply_shardedwq.wake_pg_waiters(pg->info.pgid);
   }
   epoch_t last_pg_create_epoch;
 

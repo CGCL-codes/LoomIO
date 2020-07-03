@@ -1986,6 +1986,10 @@ OSD::OSD(CephContext *cct_, ObjectStore *store_,
 	     "osd_peering_tp_threads"),
   osd_op_tp(cct, "OSD::osd_op_tp", "tp_osd_tp",
 	    get_num_op_threads()),
+  osd_op_obj_tp(cct, "OSD::osd_op_obj_tp", "tp_osd_obj_tp",
+	    get_num_op_threads()),
+  osd_op_reply_tp(cct, "OSD::osd_op_reply_tp", "tp_osd_reply_tp",
+	    get_num_op_threads()),
   remove_tp(cct, "OSD::remove_tp", "tp_osd_remove", cct->_conf->osd_remove_threads, "osd_remove_threads"),
   recovery_tp(cct, "OSD::recovery_tp", "tp_osd_recovery", cct->_conf->osd_recovery_threads, "osd_recovery_threads"),
   command_tp(cct, "OSD::command_tp", "tp_osd_cmd",  1),
@@ -2012,6 +2016,18 @@ OSD::OSD(CephContext *cct_, ObjectStore *store_,
     cct->_conf->osd_op_thread_timeout,
     cct->_conf->osd_op_thread_suicide_timeout,
     &osd_op_tp),
+  op_obj_shardedwq(
+    get_num_op_shards(),
+    this,
+    cct->_conf->osd_op_thread_timeout,
+    cct->_conf->osd_op_thread_suicide_timeout,
+    &osd_op_obj_tp),
+  op_reply_shardedwq(
+    get_num_op_shards(),
+    this,
+    cct->_conf->osd_op_thread_timeout,
+    cct->_conf->osd_op_thread_suicide_timeout,
+    &osd_op_reply_tp),
   peering_wq(
     this,
     cct->_conf->osd_op_thread_timeout,
@@ -2757,6 +2773,8 @@ int OSD::init()
 
   // initialize osdmap references in sharded wq
   op_shardedwq.prune_pg_waiters(osdmap, whoami);
+  op_obj_hardedwq.prune_pg_waiters(osdmap, whoami);
+  op_reply_shardedwq.prune_pg_waiters(osdmap, whoami);
 
   // load up pgs (as they previously existed)
   load_pgs();
@@ -2847,6 +2865,11 @@ int OSD::init()
   service.max_oldest_map = superblock.oldest_map;
 
   osd_op_tp.start();
+  //
+  osd_op_obj_tp.start();
+  osd_op_reply_tp.start();
+  //
+
   remove_tp.start();
   recovery_tp.start();
   command_tp.start();
@@ -3532,7 +3555,8 @@ int OSD::shutdown()
   // stop sending work to pgs.  this just prevents any new work in _process
   // from racing with on_shutdown and potentially entering the pg after.
   op_shardedwq.drain();
-
+  op_obj_shardedwq.drain();
+  op_reply_shardedwq.drain();
   // Shutdown PGs
   {
     RWLock::RLocker l(pg_map_lock);
@@ -3550,11 +3574,15 @@ int OSD::shutdown()
 
   // drain op queue again (in case PGs requeued something)
   op_shardedwq.drain();
+  op_obj_shardedwq.drain();
+  op_reply_shardedwq.drain();
   {
     finished.clear(); // zap waiters (bleh, this is messy)
   }
 
   op_shardedwq.clear_pg_slots();
+  op_obj_shardedwq.clear_pg_slots();
+  op_reply_shardedwq.clear_pg_slots();
 
   // unregister commands
   cct->get_admin_socket()->unregister_command("status");
@@ -3607,6 +3635,11 @@ int OSD::shutdown()
   peering_wq.clear();
   peering_tp.stop();
   dout(10) << "osd tp stopped" << dendl;
+
+  osd_op_obj_tp.drain();
+  osd_op_obj_tp.stop();
+  osd_op_reply_tp.drain();
+  osd_op_reply_tp.stop();
 
   osd_op_tp.drain();
   osd_op_tp.stop();
@@ -8924,6 +8957,8 @@ void OSD::consume_map()
   // remove any PGs which we no longer host from the session waiting_for_pg lists
   dout(20) << __func__ << " checking waiting_for_pg" << dendl;
   op_shardedwq.prune_pg_waiters(osdmap, whoami);
+  op_obj_shardedwq.prune_pg_waiters(osdmap, whoami);
+  op_reply_shardedwq.prune_pg_waiters(osdmap, whoami);
 
   service.maybe_inject_dispatch_delay();
 
@@ -9926,6 +9961,8 @@ void OSD::_remove_pg(PG *pg)
 
   // dereference from op_wq
   op_shardedwq.clear_pg_pointer(pg->info.pgid);
+  op_obj_shardedwq.clear_pg_pointer(pg->info.pgid);
+  op_reply_shardedwq.clear_pg_pointer(pg->info.pgid);
 
   // remove from map
   pg_map.erase(pg->info.pgid);
@@ -10196,7 +10233,14 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
   op->osd_trace.keyval("cost", op->get_req()->get_cost());
   op->mark_queued_for_pg();
   logger->tinc(l_osd_op_before_queue_op_lat, latency);
-  op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
+  if(op_type == CEPH_MSG_OSD_OP){
+    op_obj_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
+  }else if(op_type == MSG_OSD_EC_READ_REPLY){
+    op_reply_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
+  }else{
+    op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
+  }
+  //op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
 }
 
 
@@ -10384,7 +10428,9 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
         service.delay_factor = 0;
         break;
       case 1: //normal distribution
-        if(my_id == 6 || my_id == 7){
+        if(my_id == 6){
+          service.delay_factor = 6;
+        }else if(my_id == 7){
           service.delay_factor = 7;
         }else{
           service.delay_factor = 0;
