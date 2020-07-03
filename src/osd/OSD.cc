@@ -2773,7 +2773,7 @@ int OSD::init()
 
   // initialize osdmap references in sharded wq
   op_shardedwq.prune_pg_waiters(osdmap, whoami);
-  op_obj_hardedwq.prune_pg_waiters(osdmap, whoami);
+  op_obj_shardedwq.prune_pg_waiters(osdmap, whoami);
   op_reply_shardedwq.prune_pg_waiters(osdmap, whoami);
 
   // load up pgs (as they previously existed)
@@ -10233,6 +10233,7 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
   op->osd_trace.keyval("cost", op->get_req()->get_cost());
   op->mark_queued_for_pg();
   logger->tinc(l_osd_op_before_queue_op_lat, latency);
+  int op_type = op->get_req()->get_type();
   if(op_type == CEPH_MSG_OSD_OP){
     op_obj_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }else if(op_type == MSG_OSD_EC_READ_REPLY){
