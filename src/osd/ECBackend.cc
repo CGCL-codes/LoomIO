@@ -793,7 +793,7 @@ bool ECBackend::_handle_message(
     reply->trace = _op->pg_trace;
     get_parent()->send_message_osd_cluster(
       op->op.from.osd, reply, get_parent()->get_epoch());
-    dout(0) << " mydebug::" << "#"<<op->op.to_read.begin()->first.oid.name<<",sub_read_op_finish," << ceph_clock_now()<<"#" << dendl;
+    //dout(0) << " mydebug::" << "#"<<op->op.to_read.begin()->first.oid.name<<",sub_read_op_finish," << ceph_clock_now()<<"#" << dendl;
     return true;
   }
   case MSG_OSD_EC_READ_REPLY: {
@@ -1289,7 +1289,7 @@ void ECBackend::handle_sub_read_reply(
   if (rop.in_progress.empty() || is_complete == rop.complete.size()) {
     dout(20) << __func__ << " Complete: " << rop << dendl;
     rop.trace.event("ec read complete");
-    dout(0)<<" :obj_end#"<<op.buffers_read.begin()->first.oid.name<<","<<ceph_clock_now()<<","<<osd->whoami<<"#"<<dendl;
+    //dout(0)<<" :obj_end#"<<op.buffers_read.begin()->first.oid.name<<","<<ceph_clock_now()<<","<<osd->whoami<<"#"<<dendl;
     complete_read_op(rop, m);
   } else {
     dout(10) << __func__ << " readop not complete: " << rop << dendl;
@@ -2212,7 +2212,7 @@ void ECBackend::objects_read_async(
   Context *on_complete,
   bool fast_read)
 {
-  dout(0) << " mydebug:: obj_read" << "#"<<hoid.oid.name<<","<<get_parent()->whoami()<<"#" << dendl;
+  //dout(0) << " mydebug:: obj_read" << "#"<<hoid.oid.name<<","<<get_parent()->whoami()<<"#" << dendl;
 
   map<hobject_t,std::list<boost::tuple<uint64_t, uint64_t, uint32_t> > >
     reads;
@@ -2432,7 +2432,7 @@ void ECBackend::objects_read_and_reconstruct(
     obj_want_to_read.insert(make_pair(to_read.first, want_to_read));
   }
 
-  dout(0)<<" :obj_start#"<<reads.begin()->first.oid.name<<","<<ceph_clock_now()<<","<<osd->whoami<<"#"<<dendl;
+  //dout(0)<<" :obj_start#"<<reads.begin()->first.oid.name<<","<<ceph_clock_now()<<","<<osd->whoami<<"#"<<dendl;
   start_read_op(
     CEPH_MSG_PRIO_DEFAULT,
     obj_want_to_read,
