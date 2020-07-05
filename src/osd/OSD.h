@@ -1227,6 +1227,9 @@ public:
   void update_log_config();
   void check_config();
 
+  //for counting
+  atomic<int> pending_sub_read_num;
+
 protected:
 
   const double OSD_TICK_INTERVAL = { 1.0 };
