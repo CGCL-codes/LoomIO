@@ -778,6 +778,7 @@ bool ECBackend::_handle_message(
   case MSG_OSD_EC_READ: {
 
     osd->osd->pending_sub_read_num--;
+    dout(0)<<" mydebug:pending_info#"<<ceph_clock_now()<<","<<osd->osd->pending_sub_read_num<<"#"<<dendl;
 
     const MOSDECSubOpRead *op = static_cast<const MOSDECSubOpRead*>(_op->get_req());
     MOSDECSubOpReadReply *reply = new MOSDECSubOpReadReply;

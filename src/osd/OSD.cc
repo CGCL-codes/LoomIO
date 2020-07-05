@@ -10242,7 +10242,6 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
   }else if(op_type == MSG_OSD_EC_READ){
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
     pending_sub_read_num++;
-    dout(0)<<" mydebug:pending_info#"<<ceph_clock_now()<<","<<pending_sub_read_num<<"#"<<dendl;
   }else{
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }
