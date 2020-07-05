@@ -2055,7 +2055,8 @@ OSD::OSD(CephContext *cct_, ObjectStore *store_,
     cct->_conf->osd_remove_thread_timeout,
     cct->_conf->osd_remove_thread_suicide_timeout,
     &remove_tp),
-  service(this)
+  service(this),
+  pending_sub_read_num(0)
 {
   monc->set_messenger(client_messenger);
   op_tracker.set_complaint_and_threshold(cct->_conf->osd_op_complaint_time,
@@ -10238,6 +10239,10 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
     op_obj_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }else if(op_type == MSG_OSD_EC_READ_REPLY){
     op_reply_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
+  }else if(op_type == MSG_OSD_EC_READ){
+    op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
+    pending_sub_read_num++;
+    dout(0)<<" mydebug:#"<<ceph_clock_now()<<","<<pending_sub_read_num<<"#"<<dendl;
   }else{
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }

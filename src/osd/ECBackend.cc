@@ -776,6 +776,9 @@ bool ECBackend::_handle_message(
     return true;
   }
   case MSG_OSD_EC_READ: {
+
+    osd->osd->pending_sub_read_num--;
+
     const MOSDECSubOpRead *op = static_cast<const MOSDECSubOpRead*>(_op->get_req());
     MOSDECSubOpReadReply *reply = new MOSDECSubOpReadReply;
     reply->pgid = get_parent()->primary_spg_t();
@@ -1032,9 +1035,9 @@ void ECBackend::handle_sub_read(
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();
-      dout(0)<< ": mydebug: basic_delay_time="<<osd->basic_delay_time <<dendl;
-      dout(0)<< ": mydebug: delay_factor="<<osd->delay_factor <<dendl;
-      dout(0)<< ": mydebug: delay_time="<<delay_end_time - delay_start_time <<dendl;
+      //dout(0)<< ": mydebug: basic_delay_time="<<osd->basic_delay_time <<dendl;
+      //dout(0)<< ": mydebug: delay_factor="<<osd->delay_factor <<dendl;
+      //dout(0)<< ": mydebug: delay_time="<<delay_end_time - delay_start_time <<dendl;
 
       if (r < 0) {
 	get_parent()->clog_error() << "Error " << r
