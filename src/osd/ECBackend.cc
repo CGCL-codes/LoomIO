@@ -1695,6 +1695,7 @@ int ECBackend::get_min_avail_to_read_shards(
     redisReply *reply2;
 
     vector<int> &queue_map = osd->queue_map;
+    redisContext *context = osd->redis_context;
     //translate to have2
     int have2[EC_K+EC_M];
     int j=0;
