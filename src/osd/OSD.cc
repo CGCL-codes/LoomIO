@@ -276,7 +276,9 @@ OSDService::OSDService(OSD *osd) :
   cur_ratio(0),
   epoch_lock("OSDService::epoch_lock"),
   boot_epoch(0), up_epoch(0), bind_epoch(0),
-  is_stopping_lock("OSDService::is_stopping_lock")
+  is_stopping_lock("OSDService::is_stopping_lock"),
+  IP("10.10.1.9"),
+  PORT(6379)
   //basic_delay_time(cct->_conf->osd_basic_delay_time)
   //delay_factor(0)
 #ifdef PG_DEBUG_REFS
@@ -284,6 +286,13 @@ OSDService::OSDService(OSD *osd) :
 #endif
 {
   objecter->init();
+  //connect redis
+  redis_context = redisConnect(IP, PORT);
+  if (redis_context->err) {    /* Error flags, 0 when there is no error */
+		dout(0)<<": mydebug: connect redis fail! "<< dendl;
+	}else{
+    dout(0)<<": mydebug: connect redis success! "<< dendl;
+  }
 }
 
 OSDService::~OSDService()

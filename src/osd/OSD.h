@@ -61,6 +61,19 @@ using namespace std;
 #include "include/Spinlock.h"
 #include "common/EventTrace.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <cstring>
+#include <hiredis/hiredis.h>
+#include <ctime>
+#include <iostream>
+#include <sys/time.h>
+#include <random>
+#include <vector>
+#include <time.h>
+#include <algorithm>
+
 #define CEPH_OSD_PROTOCOL    10 /* cluster internal */
 
 
@@ -351,6 +364,11 @@ public:
   int basic_delay_time;
   int delay_factor;
   int k_optimal;
+  //for redis
+  char* IP;
+  int PORT;
+  redisContext *redis_context;
+
 
   OSD *osd;
   CephContext *cct;
