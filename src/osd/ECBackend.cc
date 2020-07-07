@@ -1698,12 +1698,14 @@ int ECBackend::get_min_avail_to_read_shards(
     redisContext *context = osd->redis_context;
     //translate to have2
     int have2[EC_K+EC_M];
-    for (int j=0, map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
+    int have2_pos=0;
+    for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
       i != shards.end();
-      ++i,++j)
+      ++i)
     {
-      have2[j]=i->second.osd;
-      dout(0)<<" mydebug: have2["<<j<<"]="<<have2[j]<<dendl;
+      have2[have2_pos]=i->second.osd;
+      dout(0)<<" mydebug: have2["<<have2_pos<<"]="<<have2[have2_pos]<<dendl;
+      have2_pos++;
     }
     //start to handle
     int schedule_map[NUM_SCHEDULER][EC_K+EC_M];
