@@ -1698,13 +1698,12 @@ int ECBackend::get_min_avail_to_read_shards(
     redisContext *context = osd->redis_context;
     //translate to have2
     int have2[EC_K+EC_M];
-    int j=0;
-    for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
+    for (int j=0, map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
       i != shards.end();
-      ++i)
+      ++i,++j)
     {
       have2[j]=i->second.osd;
-      j++;
+      dout(0)<<" mydebug: have2["<<j<<"]="<<have2[j]<<dendl;
     }
     //start to handle
     int schedule_map[NUM_SCHEDULER][EC_K+EC_M];
@@ -1719,8 +1718,10 @@ int ECBackend::get_min_avail_to_read_shards(
     reply = (redisReply *)redisCommand(context, "exists %s", info_key.c_str());
     string info_str;
     havetostr(info_str,have2);
+    dout(0)<<" mydebug: infostr="<<info_str<<dendl;
     if(reply->integer == 0){//如果不存在就创建info_key和num_key
       //cout<<info_key<<" no exist!" <<endl;
+      dout(0)<<" mydebug: info no exist!"<<dendl;
       struct timeval tv;
       struct timezone tz;
       gettimeofday (&tv , &tz);
@@ -1732,7 +1733,7 @@ int ECBackend::get_min_avail_to_read_shards(
       //reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
       //cout<<"num0="<<stoi(string(reply->str))<<endl;
     }else{
-      //cout<<info_key<<" exist!" <<endl;
+      dout(0)<<" mydebug: info exist!"<<dendl;
       time_t start_time;
       time(&start_time);
       while(1){ //如果存在就等待拿的是不是差不多了
@@ -1740,12 +1741,14 @@ int ECBackend::get_min_avail_to_read_shards(
         if(stoi(string(reply->str)) <=0){
           //当全部取完时，可以退出
           //cout<<info_key<<" has been consumed, start next!"<<endl;
+          dout(0)<<info_key<<" has been consumed, start next!"<<dendl;
           //break;
         }       
         time_t cur_time;
         time(&cur_time);
         if((cur_time-start_time)>1){
           //cout<<info_key<<" time_out, start next!"<<endl;
+          dout(0)<<info_key<<" time_out, start next!"<<dendl;
           break;
         }
       }
@@ -1806,6 +1809,7 @@ int ECBackend::get_min_avail_to_read_shards(
         }
         //如果obj信息合适
         //cout<<"get proper "<<target_key<<endl;
+        dout(0)<<"get proper "<<target_key<<dendl;
         osd->last_time[i] = temp_time;
         reply = (redisReply *)redisCommand(context, "get %s", target_key.c_str());
         //cout<<reply->type<<endl;
@@ -1841,6 +1845,7 @@ int ECBackend::get_min_avail_to_read_shards(
       time(&cur_time);
       if((cur_time-start_time)>2){//如果实在等不到了，也推出
         //cout<<"dont wait anymore"<<endl;
+        dout(0)<<"dont wait anymore"<<dendl;
         break;
       }
       i++;
@@ -1870,6 +1875,7 @@ int ECBackend::get_min_avail_to_read_shards(
             }
           }
           have.erase(k);
+          dout(0)<<"have.erase "<<k<<dendl;
         }
       }
     }
