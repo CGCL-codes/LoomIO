@@ -293,6 +293,10 @@ OSDService::OSDService(OSD *osd) :
 	}else{
     dout(0)<<": mydebug: connect redis success! "<< dendl;
   }
+  //queue_map = {0,0,0,0,0,0,0,0};
+  for(int i=0;i<NUM_SCHEDULER;i++){
+        last_time[i]="0";
+  }
 }
 
 OSDService::~OSDService()
@@ -10389,6 +10393,7 @@ const char** OSD::get_tracked_conf_keys() const
     "osd_basic_delay_time",
     "osd_imbalance_pattern",
     "osd_k_optimal",
+    "osd_gio",
     "osd_max_backfills",
     "osd_min_recovery_priority",
     "osd_max_trimming_pgs",
@@ -10462,6 +10467,10 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
 
   if (changed.count("osd_k_optimal")) {
     service.k_optimal = cct->_conf->osd_k_optimal;
+  }
+
+  if (changed.count("osd_gio")) {
+    service.gio = cct->_conf->osd_gio;
   }
 
   if (changed.count("osd_max_backfills")) {

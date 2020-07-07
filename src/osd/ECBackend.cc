@@ -1598,6 +1598,37 @@ bool mycmp(pair<shard_id_t,int> a, pair<shard_id_t,int> b) {
 	return a.second > b.second; //降序排列，延迟大的osd放前面
 }
 
+bool mycmp2(pair<int,int> a, pair<int,int> b) {
+	return a.second < b.second; //升序排列，延迟小的osd放前面
+}
+
+void havetostr(string& res, int* have)
+{
+    for(int i=0;i<(EC_K+EC_M);i++){
+        if(i!=(EC_K+EC_M-1)){
+            string temp = to_string(have[i])+string(",");
+            res += temp;
+        }else{
+            string temp = to_string(have[i]);
+            res += temp;
+        }
+    }
+    cout<<"have to str:"<<res<<endl;
+}
+
+void strtohave(string& res, int* have)
+{
+    int pos = res.find(",");
+    int pre_pos = 0;
+    int i=0;
+    while(i<(EC_K+EC_M)){
+        have[i] = stoi(res.substr(pre_pos,(pos-pre_pos)));
+        i++;
+        pre_pos = pos+1;
+        pos = res.find(",",pre_pos);
+    }
+}
+
 int ECBackend::get_min_avail_to_read_shards(
   const hobject_t &hoid,
   const set<int> &want,
@@ -1652,6 +1683,197 @@ int ECBackend::get_min_avail_to_read_shards(
     sort(load_of_shard.begin(),load_of_shard.end(),mycmp);
     have.erase(load_of_shard[0].first);
     have.erase(load_of_shard[1].first);
+    
+  }else if(osd->gio){//gio
+    int my_id = get_parent()->whoami();
+    string info_key = string("info")+to_string(my_id);
+    string num_key = string("num")+to_string(my_id);
+    string time_key = string("time")+to_string(my_id); //this is usec
+    string sec_key = string("sec")+to_string(my_id);
+
+    redisReply *reply;
+    redisReply *reply2;
+
+    vector<int> &queue_map = osd->queue_map;
+    //translate to have2
+    int have2[EC_K+EC_M];
+    int j=0;
+    for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
+      i != shards.end();
+      ++i)
+    {
+      have2[j]=i->second.osd;
+      j++;
+    }
+    //start to handle
+    int schedule_map[NUM_SCHEDULER][EC_K+EC_M];
+    for(int i=0;i<NUM_SCHEDULER;i++){
+      for(int j=0;j<(EC_K+EC_M);j++){
+        schedule_map[i][j]=-1;
+      }   
+    }
+    for(int i=0;i<(EC_K+EC_M);i++){
+        schedule_map[my_id][i]=have2[i];
+    }
+    reply = (redisReply *)redisCommand(context, "exists %s", info_key.c_str());
+    string info_str;
+    havetostr(info_str,have2);
+    if(reply->integer == 0){//如果不存在就创建info_key和num_key
+      //cout<<info_key<<" no exist!" <<endl;
+      struct timeval tv;
+      struct timezone tz;
+      gettimeofday (&tv , &tz);
+      //cout<<tv.tv_usec<<endl;
+      reply = (redisReply *)redisCommand(context, "set %s %s", info_key.c_str(),info_str.c_str());
+      reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
+      reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),tv.tv_usec);
+      reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),tv.tv_sec);
+      //reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
+      //cout<<"num0="<<stoi(string(reply->str))<<endl;
+    }else{
+      //cout<<info_key<<" exist!" <<endl;
+      time_t start_time;
+      time(&start_time);
+      while(1){ //如果存在就等待拿的是不是差不多了
+        reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
+        if(stoi(string(reply->str)) <=0){
+          //当全部取完时，可以退出
+          //cout<<info_key<<" has been consumed, start next!"<<endl;
+          //break;
+        }       
+        time_t cur_time;
+        time(&cur_time);
+        if((cur_time-start_time)>1){
+          //cout<<info_key<<" time_out, start next!"<<endl;
+          break;
+        }
+      }
+            
+      struct timeval tv;
+      struct timezone tz;
+      gettimeofday (&tv , &tz);
+      //cout<<"new time_stamp"<<tv.tv_sec<<"."<<tv.tv_usec<<endl;
+      reply = (redisReply *)redisCommand(context, "set %s %s", info_key.c_str(),info_str.c_str());
+      reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
+      reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),tv.tv_usec);
+      reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),tv.tv_sec);
+      //reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
+      //cout<<"num0="<<stoi(string(reply->str))<<endl;
+    }
+
+    //开始获取别的osd的obj
+    int num_got = 0;
+    //循环遍历其他osd
+    int i=0;//i为当前遍历的osd编号
+    int have_got[NUM_SCHEDULER];
+    for(int j=0;j<NUM_SCHEDULER;j++){
+      have_got[j]=0;
+    }
+    time_t start_time;
+    time(&start_time);
+    //cout<<"start_time="<<start_time<<endl;
+    while(1){
+      if(i==my_id || have_got[i]){//跳过自己的id以及已经获得的id
+        i++;
+        i%=NUM_SCHEDULER;
+        continue;
+      }
+      //cout<<"check "<<i<<"..."<<endl;
+      string target_key = string("info")+to_string(i);
+      string target_num = string("num")+to_string(i);
+      string target_time = string("time")+to_string(i);
+      string target_sec = string("sec")+to_string(i);
+      //cout<<"target_key="<<target_key<<endl;
+      reply = (redisReply *)redisCommand(context, "exists %s", target_time.c_str());
+      reply2 = (redisReply *)redisCommand(context, "exists %s", target_sec.c_str());
+      if(reply->integer == 0 || reply2->integer ==0){//如果target_time不存在就跳到后面判断是否结束
+        //cout<<target_time<<" no exists!"<<endl;
+        goto end;
+      }else{
+        //cout<<target_time<<" exists!"<<endl;
+        //time存在了就获得time
+        reply = (redisReply *)redisCommand(context, "get %s", target_time.c_str());      
+        string temp_time = reply->str;
+        if(temp_time==osd->last_time[i]){//如果还是之前的时间戳，就继续看下一个
+          goto end;
+        }
+        reply = (redisReply *)redisCommand(context, "get %s", target_sec.c_str());      
+        string sec_time = reply->str;
+        if((start_time-stoi(sec_time))>3){//如果时间戳太旧了，就下一个
+          //cout<<target_key<<" is too old"<<endl;
+          goto end;
+        }
+        //如果obj信息合适
+        //cout<<"get proper "<<target_key<<endl;
+        osd->last_time[i] = temp_time;
+        reply = (redisReply *)redisCommand(context, "get %s", target_key.c_str());
+        //cout<<reply->type<<endl;
+        int temp_have[EC_K+EC_M];
+        if(reply->str==NULL){
+          //cout<<target_key<<" has beed deleted!"<<endl;
+        }
+        string temp_str = reply->str;
+
+        //将目标obj的引用次数减一
+        reply = (redisReply *)redisCommand(context, "decr %s", target_num.c_str());
+        strtohave(temp_str,temp_have);//读出的信息存放在temp_have中，
+        // for(int i=0;i<(EC_K+EC_M);i++){
+        //     cout<<"strtohave:"<<temp_have[i]<<endl;
+        // }
+        //将have插入到schedule_map中
+        for(int j=0;j<(EC_K+EC_M);j++){
+          schedule_map[i][j] = temp_have[j];
+        }
+        //获得的加1
+        num_got++;
+        have_got[i]=1;
+      }
+    end:            
+      if(num_got>=(NUM_SCHEDULER-1-can_left)){//首先保证至少获得这么多
+        if(num_got==(NUM_SCHEDULER-1)){
+          //cout<<"have got all!"<<endl;
+          break;
+        }//如果全部拿到了，就退出
+                    
+      }
+      time_t cur_time;
+      time(&cur_time);
+      if((cur_time-start_time)>2){//如果实在等不到了，也推出
+        cout<<"dont wait anymore"<<endl;
+        break;
+      }
+      i++;
+      i%=NUM_SCHEDULER;
+    }
+    //已经获得到了schedule map，进行调度
+    for(int i =0;i<NUM_SCHEDULER;i++){
+      if(schedule_map[i][0]==-1){
+        continue;//跳过没有收到信息的osd
+      }
+      //调度就是选最少的四个
+      vector<pair<int,int>> load_of_shard;
+      for(int j=0;j<(EC_K+EC_M);j++){
+        load_of_shard.push_back(make_pair(schedule_map[i][j], queue_map[schedule_map[i][j]]));
+      }
+      sort(load_of_shard.begin(),load_of_shard.end(),mycmp2);
+      for(int j=0;j<EC_K;j++){//调度最小的k个
+          queue_map[load_of_shard[j].first]++;
+      }
+      if(i==my_id){//根据调度把自己的have给去了
+        for(int j=EC_K;j<(EC_K+EC_M);j++){
+          int temp_osd_id = load_of_shard[j].first;//不应该读这个osd
+          int k;//相应osd所对应的shardid
+          for(k=0;k<(EC_K+EC_M);k++){
+            if(have2[k]==temp_osd_id){
+              break;
+            }
+          }
+          have.erase(k);
+        }
+      }
+    }
+    dout(0)<<" mydebug:after_schedule:"<<queue_map<<dendl;
+
   }else{
     ;
   }

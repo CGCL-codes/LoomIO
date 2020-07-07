@@ -2384,6 +2384,10 @@ std::vector<Option> get_global_options() {
     .set_default(0)
     .set_description(""),
 
+    Option("osd_gio", Option::TYPE_INT, Option::LEVEL_ADVANCED)
+    .set_default(0)
+    .set_description(""),
+
     Option("osd_backfill_scan_min", Option::TYPE_INT, Option::LEVEL_ADVANCED)
     .set_default(64)
     .set_description(""),

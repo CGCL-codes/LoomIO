@@ -74,6 +74,11 @@ using namespace std;
 #include <time.h>
 #include <algorithm>
 
+#define NUM_OSD 8
+#define NUM_SCHEDULER 8
+#define can_left 0
+#define EC_K 4
+#define EC_M 2
 #define CEPH_OSD_PROTOCOL    10 /* cluster internal */
 
 
@@ -364,10 +369,14 @@ public:
   int basic_delay_time;
   int delay_factor;
   int k_optimal;
+  int gio;
   //for redis
   char* IP;
   int PORT;
   redisContext *redis_context;
+  //for gio
+  vector<int> queue_map(NUM_OSD);
+  string last_time[NUM_SCHEDULER];
 
 
   OSD *osd;
