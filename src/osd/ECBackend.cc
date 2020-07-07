@@ -1613,7 +1613,7 @@ void havetostr(string& res, int* have)
             res += temp;
         }
     }
-    cout<<"have to str:"<<res<<endl;
+    //cout<<"have to str:"<<res<<endl;
 }
 
 void strtohave(string& res, int* have)
@@ -1839,7 +1839,7 @@ int ECBackend::get_min_avail_to_read_shards(
       time_t cur_time;
       time(&cur_time);
       if((cur_time-start_time)>2){//如果实在等不到了，也推出
-        cout<<"dont wait anymore"<<endl;
+        //cout<<"dont wait anymore"<<endl;
         break;
       }
       i++;
