@@ -293,9 +293,11 @@ OSDService::OSDService(OSD *osd) :
 	}else{
     dout(0)<<": mydebug: connect redis success! "<< dendl;
   }
-  //queue_map = {0,0,0,0,0,0,0,0};
+  for(int i=0;i<NUM_OSD;i++){
+        queue_map.push_back(0);
+  }
   for(int i=0;i<NUM_SCHEDULER;i++){
-        last_time[i]="0";
+        last_time.push_back(string("0"));
   }
 }
 

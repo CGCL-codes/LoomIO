@@ -375,8 +375,8 @@ public:
   int PORT;
   redisContext *redis_context;
   //for gio
-  vector<int> queue_map(NUM_OSD);
-  string last_time[NUM_SCHEDULER];
+  vector<int> queue_map;
+  vector<string> last_time;
 
 
   OSD *osd;
