@@ -719,6 +719,8 @@ OPTION(osd_basic_delay_time, OPT_INT) //usec
 OPTION(osd_imbalance_pattern, OPT_INT)
 OPTION(osd_k_optimal, OPT_INT)
 OPTION(osd_gio, OPT_INT)
+OPTION(osd_gio_show_interval, OPT_INT)
+OPTION(osd_gio_wait_interval, OPT_INT)
 
 OPTION(osd_backfill_scan_min, OPT_INT)
 OPTION(osd_backfill_scan_max, OPT_INT)

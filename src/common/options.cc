@@ -2384,6 +2384,14 @@ std::vector<Option> get_global_options() {
     .set_default(0)
     .set_description(""),
 
+    Option("osd_gio_show_interval", Option::TYPE_INT, Option::LEVEL_ADVANCED)
+    .set_default(10000000)
+    .set_description(""),
+
+    Option("osd_gio_wait_interval", Option::TYPE_INT, Option::LEVEL_ADVANCED)
+    .set_default(10000000)
+    .set_description(""),
+
     Option("osd_gio", Option::TYPE_INT, Option::LEVEL_ADVANCED)
     .set_default(0)
     .set_description(""),

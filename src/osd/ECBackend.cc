@@ -1736,8 +1736,11 @@ int ECBackend::get_min_avail_to_read_shards(
       //cout<<"num0="<<stoi(string(reply->str))<<endl;
     }else{
       dout(0)<<" mydebug: info exist!"<<dendl;
-      time_t start_time;
-      time(&start_time);
+      utime_t time_out_interval;
+			time_out_interval.tv.tv_sec = 0;
+      //delay_interval.tv.tv_nsec = 40000000;
+			time_out_interval.tv.tv_nsec = osd->gio_show_interval;
+			utime_t start_time = ceph_clock_now(); 
       while(1){ //如果存在就等待拿的是不是差不多了
         reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
         if(stoi(string(reply->str)) <=0){
@@ -1746,9 +1749,8 @@ int ECBackend::get_min_avail_to_read_shards(
           dout(0)<<info_key<<" has been consumed, start next!"<<dendl;
           //break;
         }       
-        time_t cur_time;
-        time(&cur_time);
-        if((cur_time-start_time)>1){
+        utime_t cur_time = ceph_clock_now();
+        if((cur_time-start_time)>time_out_interval){
           //cout<<info_key<<" time_out, start next!"<<endl;
           dout(0)<<info_key<<" time_out, start next!"<<dendl;
           break;
@@ -1775,8 +1777,11 @@ int ECBackend::get_min_avail_to_read_shards(
     for(int j=0;j<NUM_SCHEDULER;j++){
       have_got[j]=0;
     }
-    time_t start_time;
-    time(&start_time);
+    utime_t time_out_interval;
+		time_out_interval.tv.tv_sec = 0;
+    //delay_interval.tv.tv_nsec = 40000000;
+		time_out_interval.tv.tv_nsec = osd->gio_wait_interval;
+		utime_t start_time = ceph_clock_now();
     //cout<<"start_time="<<start_time<<endl;
     while(1){
       if(i==my_id || have_got[i]){//跳过自己的id以及已经获得的id
@@ -1843,9 +1848,8 @@ int ECBackend::get_min_avail_to_read_shards(
         }//如果全部拿到了，就退出
                     
       }
-      time_t cur_time;
-      time(&cur_time);
-      if((cur_time-start_time)>2){//如果实在等不到了，也推出
+      utime_t cur_time = ceph_clock_now();
+      if((cur_time-start_time)>time_out_interval){//如果实在等不到了，也推出
         //cout<<"dont wait anymore"<<endl;
         dout(0)<<"dont wait anymore"<<dendl;
         break;

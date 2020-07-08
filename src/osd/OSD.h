@@ -377,6 +377,8 @@ public:
   //for gio
   vector<int> queue_map;
   vector<string> last_time;
+  int gio_show_interval;
+  int gio_wait_interval;
 
 
   OSD *osd;
