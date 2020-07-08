@@ -10397,7 +10397,7 @@ const char** OSD::get_tracked_conf_keys() const
     "osd_k_optimal",
     "osd_gio",
     "osd_gio_show_interval",
-    "osd_gio_wait_interval".
+    "osd_gio_wait_interval",
     "osd_max_backfills",
     "osd_min_recovery_priority",
     "osd_max_trimming_pgs",
