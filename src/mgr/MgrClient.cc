@@ -356,7 +356,7 @@ bool MgrClient::handle_mgr_configure(MMgrConfigure *m)
     return true;
   }
 
-  ldout(cct, 4) << "stats_period=" << m->stats_period << dendl;
+  ldout(cct, 0) << "stats_period=" << m->stats_period << dendl;
 
   if (stats_threshold != m->stats_threshold) {
     ldout(cct, 4) << "updated stats threshold: " << m->stats_threshold << dendl;
