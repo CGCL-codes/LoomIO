@@ -3252,7 +3252,7 @@ void OSD::create_logger()
   osd_plb.add_u64(
     l_osd_pending_sub_read_num, "pending_sub_read_num",
     "pending_sub_read_num");
-  osd_plb.add_u64(
+  osd_plb.add_u64_avg(
     l_osd_disk_read_latency, "disk_read_latency",
     "disk_read_latency");
 
