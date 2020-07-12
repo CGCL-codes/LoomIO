@@ -1040,7 +1040,7 @@ void ECBackend::handle_sub_read(
       osd->osd->get_logger()->set(l_osd_disk_read_latency,delay_end_time - start_read_time);
       //dout(0)<< ": mydebug: basic_delay_time="<<osd->basic_delay_time <<dendl;
       //dout(0)<< ": mydebug: delay_factor="<<osd->delay_factor <<dendl;
-      //dout(0)<< ": mydebug: delay_time="<<delay_end_time - delay_start_time <<dendl;
+      dout(0)<< ": mydebug: disk_read_time="<<delay_end_time - start_read_time <<dendl;
 
       if (r < 0) {
 	get_parent()->clog_error() << "Error " << r
