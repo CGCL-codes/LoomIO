@@ -146,6 +146,7 @@ void DaemonPerfCounters::update(MMgrReport *report)
   DECODE_START(1, p);
   for (const auto &t_path : session->declared_types) {
     const auto &t = types.at(t_path);
+    dout(0) << " mydebug: t_path="<<t_path << dendl;
     auto instances_it = instances.find(t_path);
     // Always check the instance exists, as we don't prevent yet
     // multiple sessions from daemons with the same name, and one

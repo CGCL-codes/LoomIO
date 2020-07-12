@@ -778,6 +778,7 @@ bool ECBackend::_handle_message(
   case MSG_OSD_EC_READ: {
 
     osd->osd->pending_sub_read_num--;
+    logger->set(l_osd_pending_sub_read_num,pending_sub_read_num);
     dout(0)<<" mydebug:pending_info#"<<ceph_clock_now()<<","<<osd->osd->pending_sub_read_num<<"#"<<dendl;
 
     const MOSDECSubOpRead *op = static_cast<const MOSDECSubOpRead*>(_op->get_req());
@@ -1036,6 +1037,7 @@ void ECBackend::handle_sub_read(
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();
+      osd->osd->get_logger()->inc(l_osd_disk_read_latency,delay_end_time - delay_start_time);
       //dout(0)<< ": mydebug: basic_delay_time="<<osd->basic_delay_time <<dendl;
       //dout(0)<< ": mydebug: delay_factor="<<osd->delay_factor <<dendl;
       //dout(0)<< ": mydebug: delay_time="<<delay_end_time - delay_start_time <<dendl;

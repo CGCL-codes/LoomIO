@@ -3248,6 +3248,14 @@ void OSD::create_logger()
   // All the basic OSD operation stats are to be considered useful
   osd_plb.set_prio_default(PerfCountersBuilder::PRIO_USEFUL);
 
+  //for gio
+  osd_plb.add_u64(
+    l_osd_pending_sub_read_num, "pending_sub_read_num",
+    "pending_sub_read_num");
+  osd_plb.add_u64_avg(
+    l_osd_disk_read_latency, "disk_read_latency",
+    "disk_read_latency");
+
   osd_plb.add_u64(
     l_osd_op_wip, "op_wip",
     "Replication operations currently being processed (primary)");
@@ -10257,6 +10265,7 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
   }else if(op_type == MSG_OSD_EC_READ){
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
     pending_sub_read_num++;
+    logger->set(l_osd_pending_sub_read_num,pending_sub_read_num);
   }else{
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }

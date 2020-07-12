@@ -1259,6 +1259,10 @@ public:
   //for counting
   atomic<int> pending_sub_read_num;
 
+  PerfCounters* get_logger(){
+    return this->logger;
+  }
+
 protected:
 
   const double OSD_TICK_INTERVAL = { 1.0 };
