@@ -1037,7 +1037,7 @@ void ECBackend::handle_sub_read(
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();
-      osd->osd->get_logger()->inc(l_osd_disk_read_latency,delay_end_time - delay_start_time);
+      osd->osd->get_logger()->inc(l_osd_disk_read_latency,delay_end_time - start_read_time);
       //dout(0)<< ": mydebug: basic_delay_time="<<osd->basic_delay_time <<dendl;
       //dout(0)<< ": mydebug: delay_factor="<<osd->delay_factor <<dendl;
       //dout(0)<< ": mydebug: delay_time="<<delay_end_time - delay_start_time <<dendl;
