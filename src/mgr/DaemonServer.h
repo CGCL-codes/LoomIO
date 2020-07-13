@@ -44,6 +44,12 @@ struct MonCommand;
  */
 class DaemonServer : public Dispatcher, public md_config_obs_t
 {
+public:
+  //for gio
+  std::mutex gio_update_mutex;
+  map<int,int> osd_disk_read_time_map; 
+  map<int,int> osd_pending_list_size_map;
+
 protected:
   boost::scoped_ptr<Throttle> client_byte_throttler;
   boost::scoped_ptr<Throttle> client_msg_throttler;
