@@ -162,12 +162,12 @@ void DaemonPerfCounters::update(MMgrReport *report)
       ::decode(avgcount, p);
       ::decode(avgcount2, p);
       if(t_path == "osd.disk_read_latency"){
-        dout(0)<<" mydubug: disk_read_latency="<<val<<dendl;
+        //dout(0)<<" mydubug: disk_read_latency="<<val<<dendl;
       }
       instances_it->second.push_avg(now, val, avgcount);
     } else {
       if(t_path == "osd.pending_sub_read_num"){
-        dout(0)<<" mydubug: pending_sub_read_num="<<val<<dendl;
+        //dout(0)<<" mydubug: pending_sub_read_num="<<val<<dendl;
       }
       
       instances_it->second.push(now, val);
