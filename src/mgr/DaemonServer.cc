@@ -522,7 +522,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
         if (osd_cons.find(i) != osd_cons.end()) {
           auto temp_size = osd_cons[i].size();
           auto temp_ref = *(osd_cons[i].begin());
-          dout(0)<<" mydebug: ref of osd"<<i<<": "<<temp_ref<<dendl;
+          dout(0)<<" mydebug: ref of osd"<<i<<": "<<temp_ref<<" size="<<temp_size<<dendl;
         }else{
           dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
         }        
