@@ -495,22 +495,37 @@ bool DaemonServer::handle_report(MMgrReport *m)
     Mutex::Locker l(daemon->lock);
     auto &daemon_counters = daemon->perf_counters;
     daemon_counters.update(m);
+
     //for gio
     //更新osd_disk_read_time_map以及osd_pending_list_size_map
     gio_update_mutex.lock();
     auto instances_1 = daemon_counters.instances.find("osd.disk_read_latency");
-    osd_disk_read_time_map[std::stoi(key.second)] = instances_1->second.get_current();
+    if(instances_1!=daemon_counters.instances.end()){
+      osd_disk_read_time_map[std::stoi(key.second)] = instances_1->second.get_current();
+      dout(0)<<" mydebug: updata osd_disk_read_time_map"<<dendl;
+    }else{
+      dout(0)<<" mydebug: can not updata osd_disk_read_time_map"<<dendl;
+    }
     auto instances_2 = daemon_counters.instances.find("osd.pending_sub_read_num");
-    osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
+    if(instances_2!=daemon_counters.instances.end()){
+      osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
+      dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
+    }else{
+      dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
+    }
     gio_update_mutex.unlock();
     //如果report是从0号发来的时候publish状态
     int osd_num = 8;
     if(key.first=="osd"&&key.second=="0"){
       dout(0)<<" mydebug: start to publish"<<dendl;
       for(int i=0;i<osd_num;i++){
-        auto temp_size = osd_cons[i].size();
-        auto temp_ref = *(osd_cons[i].begin());
-        dout(0)<<" mydebug: ref of osd"<<i<<": "<<temp_ref<<dendl;
+        if (osd_cons.find(i) != osd_cons.end()) {
+          auto temp_size = osd_cons[i].size();
+          auto temp_ref = *(osd_cons[i].begin());
+          dout(0)<<" mydebug: ref of osd"<<i<<": "<<temp_ref<<dendl;
+        }else{
+          dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
+        }        
       }
     }
 
