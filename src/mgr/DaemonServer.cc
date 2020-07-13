@@ -498,9 +498,9 @@ bool DaemonServer::handle_report(MMgrReport *m)
     //for gio
     //更新osd_disk_read_time_map以及osd_pending_list_size_map
     gio_update_mutex.lock();
-    auto instances_1 = instances.find("osd.disk_read_latency");
+    auto instances_1 = daemon_counters.instances.find("osd.disk_read_latency");
     osd_disk_read_time_map[std::stoi(key.second)] = instances_1->second.get_current();
-    auto instances_2 = instances.find("osd.pending_sub_read_num");
+    auto instances_2 = daemon_counters.instances.find("osd.pending_sub_read_num");
     osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
     gio_update_mutex.unlock();
     //如果report是从0号发来的时候publish状态
