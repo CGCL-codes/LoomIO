@@ -59,9 +59,11 @@ class PerfCounterInstance
   boost::circular_buffer<DataPoint> buffer;
   boost::circular_buffer<AvgDataPoint> avg_buffer;
 
-  uint64_t get_current() const;
 
   public:
+  
+  uint64_t get_current() const;
+
   const boost::circular_buffer<DataPoint> & get_data() const
   {
     return buffer;
