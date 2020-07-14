@@ -29,7 +29,11 @@ private:
   ~MOSDStatus() override {}
 
 public:
-  
+  const char *get_type_name() const override { return "osd_status"; }
+  void print(ostream& o) const override {
+    o << "MOSDStatus";
+  }
+
   void encode_payload(uint64_t features) override {
     ::encode(osd_disk_read_time_map, payload);
     ::encode(osd_pending_list_size_map, payload);
