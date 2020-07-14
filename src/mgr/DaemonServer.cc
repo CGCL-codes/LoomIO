@@ -519,7 +519,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
     int osd_num = 8;
     if(key.first=="osd"&&key.second=="0"){
       int ready_flag = 1;
-      dout(0)<<" mydebug: check if ready"<<dendl;
+      dout(0)<<" mydebug: when handle report from OSD."<<key.second<<" check if ready:"<<dendl;
       for(int i=0;i<osd_num;i++){
         if (osd_cons.find(i) != osd_cons.end()) {
           for (auto& con : osd_cons.find(i)->second) {
@@ -527,7 +527,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
           }
         }else{
           ready_flag = 0; //有的osd的地址还没建立好
-          dout(0)<<" mydebug: ref is not ready!"<<dendl;
+          dout(0)<<" mydebug: ref is not ready for OSD."<<i<<dendl;
         }        
       }
       gio_update_mutex.lock(); //检查两个map的数据是不是已经是8个了
@@ -538,6 +538,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
       }  
       if(ready_flag == 1){//当全部osd的地址都准备好的时候
         //准备好msg,先上锁以防数据被其他report修改
+        dout(0)<<" mydebug: data & ref is ready!"<<dendl;
         MOSDStatus *status_message = new MOSDStatus();
         status_message->osd_disk_read_time_map = osd_disk_read_time_map;
         status_message->osd_pending_list_size_map = osd_pending_list_size_map;
@@ -546,8 +547,8 @@ bool DaemonServer::handle_report(MMgrReport *m)
           if (osd_cons.find(i) != osd_cons.end()) {
             for (auto& con : osd_cons.find(i)->second) {
               if(con->is_connected()){
-                con->send_message(status_message);
                 dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
+                con->send_message(status_message);
               }else{
                 dout(0)<<" mydebug: is not connected "<<i<<dendl;
               } 
