@@ -522,9 +522,9 @@ bool DaemonServer::handle_report(MMgrReport *m)
       dout(0)<<" mydebug: check if ready"<<dendl;
       for(int i=0;i<osd_num;i++){
         if (osd_cons.find(i) != osd_cons.end()) {
-          auto temp_size = osd_cons.find(i)->second.size();
-          ConnectionRef temp_ref = osd_cons.find(i)->second.begin();
-          dout(0)<<" mydebug: ref of osd"<<i<<": "<<temp_ref->get_peer_addr()<<" size="<<temp_size<<dendl;
+          for (auto& con : osd_cons.find(i)->second) {
+            dout(0)<<" mydebug: ref of osd"<<i<<": "<<con->get_peer_addr()<<dendl;
+          }
         }else{
           ready_flag = 0; //有的osd的地址还没建立好
           dout(0)<<" mydebug: ref is not ready!"<<dendl;
@@ -544,13 +544,14 @@ bool DaemonServer::handle_report(MMgrReport *m)
         gio_update_mutex.unlock();         
         for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
           if (osd_cons.find(i) != osd_cons.end()) {
-            ConnectionRef temp_ref = osd_cons.find(i)->second.begin();
-            if(temp_ref->is_connected()){
-              temp_ref->send_message(status_message);
-              dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<temp_ref->get_peer_addr()<<dendl;
-            }else{
-              dout(0)<<" mydebug: is not connected "<<i<<dendl;
-            }                   
+            for (auto& con : osd_cons.find(i)->second) {
+              if(con->is_connected()){
+                con->send_message(status_message);
+                dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
+              }else{
+                dout(0)<<" mydebug: is not connected "<<i<<dendl;
+              } 
+            }                  
           }else{
             dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
           }        
