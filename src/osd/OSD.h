@@ -2543,7 +2543,7 @@ private:
   void handle_pg_scrub(struct MOSDScrub *m, PG* pg);
   void handle_scrub(struct MOSDScrub *m);
   void handle_osd_ping(class MOSDPing *m);
-  void handle_status(struct MOSDStatus *m);
+  void handle_status(MOSDStatus *m);
 
   int init_op_flags(OpRequestRef& op);
 
