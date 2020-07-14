@@ -523,7 +523,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
       for(int i=0;i<osd_num;i++){
         if (osd_cons.find(i) != osd_cons.end()) {
           auto temp_size = osd_cons[i].size();
-          auto temp_ref = *(osd_cons[i].begin());
+          auto &temp_ref = osd_cons[i].begin();
           dout(0)<<" mydebug: ref of osd"<<i<<": "<<temp_ref<<" size="<<temp_size<<dendl;
         }else{
           ready_flag = 0; //有的osd的地址还没建立好
