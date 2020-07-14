@@ -517,23 +517,33 @@ bool DaemonServer::handle_report(MMgrReport *m)
       }
       gio_update_mutex.unlock();
       //如果report是从0号发来的时候publish状态
+        int osd_num = 8;
       if(key.first=="osd"&&key.second=="0"){
         gio_update_mutex.lock();
         MOSDStatus *status_message = new MOSDStatus();
         status_message->osd_disk_read_time_map = osd_disk_read_time_map;
         status_message->osd_pending_list_size_map = osd_pending_list_size_map;
         gio_update_mutex.unlock();
-        if(osd_cons.find(1)!=osd_cons.end())
-          for (auto& con : osd_cons.find(1)->second) {
-            if(con->is_connected()){
-              dout(0)<<" mydebug: send status_message to OSD.1"<<", ref="<<con->get_peer_addr()<<dendl;
-              con->send_message(status_message);
-            }else{
-              dout(0)<<" mydebug: is not connected "<<dendl;
-            } 
-          }         
+        //先判断map里面有没有八个
+        if(osd_disk_read_time_map.size()==osd_num && osd_pending_list_size_map.size()==osd_num){
+          for(int i=0;i<osd_num;i++){ //对于0个osd
+            if(osd_cons.find(i)!=osd_cons.end()){
+              for (auto& con : osd_cons.find(i)->second) {
+                if(con->is_connected()){
+                  dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
+                  con->send_message(status_message);
+                }else{
+                  dout(0)<<" mydebug: is not connected "<<dendl;
+                } 
+              }         
+            }
+          }
+        }else{
+          dout(0)<<" mydebug: two map is not ready!"<<dendl;
+        }
+        
       }
-      int osd_num = 8;
+    
       // if(key.first=="osd"&&key.second=="0"){
       //   int ready_flag = 1;
       //   dout(0)<<" mydebug: when handle report from OSD."<<key.second<<" check if ready:"<<dendl;
