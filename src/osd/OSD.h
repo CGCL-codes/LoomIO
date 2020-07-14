@@ -1260,6 +1260,9 @@ public:
 
   //for counting
   atomic<int> pending_sub_read_num;
+  //for gio
+  map<int,int> disk_latency_map;
+  map<int,int> pending_list_size_map;
 
   PerfCounters* get_logger(){
     return this->logger;
@@ -2540,6 +2543,7 @@ private:
   void handle_pg_scrub(struct MOSDScrub *m, PG* pg);
   void handle_scrub(struct MOSDScrub *m);
   void handle_osd_ping(class MOSDPing *m);
+  void handle_status(struct MOSDStatus *m);
 
   int init_op_flags(OpRequestRef& op);
 

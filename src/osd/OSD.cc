@@ -7890,7 +7890,7 @@ void OSD::_dispatch(Message *m)
     break;
 
   case MSG_OSD_STATUS:
-    dout(0) << " mydebug: get MSG_OSD_STATUS " << dendl;
+    handle_status(static_cast<MOSDStatus*>(m));
     break;
 
     // -- need OSDMap --
@@ -7971,6 +7971,21 @@ void OSD::handle_scrub(MOSDScrub *m)
   }
 
   m->put();
+}
+
+void OSD::handle_status(MOSDStatus *m)
+{
+  dout(0) << " mydebug: in handle_status " << dendl;
+  disk_latency_map = m->osd_disk_read_time_map;
+  pending_list_size_map = m->osd_pending_list_size_map;
+  dout(0) << " mydebug: after updating: " << dendl;
+  for(int i=0;i<disk_latency_map.size();i++){
+    dout(0) << " mydebug: disk_latency_map["<<i<<"]="<<disk_latency_map[i]<< dendl;
+  }
+  for(int i=0;i<pending_list_size_map.size();i++){
+    dout(0) << " mydebug: pending_list_size_map["<<i<<"]="<<pending_list_size_map[i]<< dendl;
+  }
+  m->put();//put功能不明，先待定
 }
 
 bool OSD::scrub_random_backoff()
