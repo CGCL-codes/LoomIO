@@ -1888,7 +1888,7 @@ int ECBackend::get_min_avail_to_read_shards(
       sort(load_of_shard.begin(),load_of_shard.end(),mycmp2);
       for(int j=0;j<EC_K;j++){//调度最小的k个
           //queue_map[load_of_shard[j].first]++;//for primitive gio
-          osd->osd->pending_list_size_map[j]++;
+          osd->osd->pending_list_size_map[load_of_shard[j].first]++;
       }
       if(i==my_id){//根据调度把自己的have给去了
         for(int j=EC_K;j<(EC_K+EC_M);j++){
