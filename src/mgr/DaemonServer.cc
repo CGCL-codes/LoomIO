@@ -504,16 +504,16 @@ bool DaemonServer::handle_report(MMgrReport *m)
       auto instances_1 = daemon_counters.instances.find("osd.disk_read_latency");
       if(instances_1!=daemon_counters.instances.end()){
         osd_disk_read_time_map[std::stoi(key.second)] = instances_1->second.get_current();
-        dout(0)<<" mydebug: updata osd_disk_read_time_map"<<dendl;
+        //dout(0)<<" mydebug: updata osd_disk_read_time_map"<<dendl;
       }else{
-        dout(0)<<" mydebug: can not updata osd_disk_read_time_map"<<dendl;
+        //dout(0)<<" mydebug: can not updata osd_disk_read_time_map"<<dendl;
       }
       auto instances_2 = daemon_counters.instances.find("osd.pending_sub_read_num");
       if(instances_2!=daemon_counters.instances.end()){
         osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
-        dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
+        //dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
       }else{
-        dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
+        //dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
       }
       gio_update_mutex.unlock();
       //如果report是从0号发来的时候publish状态
@@ -526,11 +526,11 @@ bool DaemonServer::handle_report(MMgrReport *m)
             if(osd_cons.find(i)!=osd_cons.end()){
               for (auto& con : osd_cons.find(i)->second) {
                 if(con->is_connected()){
-                  dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
+                  
                   MOSDStatus *status_message = new MOSDStatus();
                   status_message->osd_disk_read_time_map = osd_disk_read_time_map;
                   status_message->osd_pending_list_size_map = osd_pending_list_size_map;
-
+                  dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<", pending list="<<status_message->osd_pending_list_size_map<<dendl;
                   con->send_message(status_message);
                 }else{
                   dout(0)<<" mydebug: is not connected "<<dendl;
