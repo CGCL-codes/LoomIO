@@ -7986,7 +7986,7 @@ void OSD::handle_status(MOSDStatus *m)
   for(int i=0;i<pending_list_size_map.size();i++){
     dout(0) << " mydebug: pending_list_size_map["<<i<<"]="<<pending_list_size_map[i]<< dendl;
   }
-  schedule_lock.lock();
+  schedule_lock.unlock();
   m->put();//put功能不明，先待定
 }
 

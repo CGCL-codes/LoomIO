@@ -1700,7 +1700,7 @@ int ECBackend::get_min_avail_to_read_shards(
     //使用disk_latency_map以及pending_list_size_map来计算出新的queuemap
     vector<int> queue_map(NUM_OSD);
     int queue_map_size = 0;
-    //osd->osd->schedule_lock.lock();
+    osd->osd->schedule_lock.lock();
     for(auto it : osd->osd->pending_list_size_map){
       int cur_osd = it.first;
       int cur_size = it.second;
@@ -1903,7 +1903,7 @@ int ECBackend::get_min_avail_to_read_shards(
       }
     }
     dout(0)<<" mydebug:after_schedule:"<<osd->osd->pending_list_size_map<<dendl;
-    //osd->osd->schedule_lock.unlock();
+    osd->osd->schedule_lock.unlock();
 
   }else{
     ;
