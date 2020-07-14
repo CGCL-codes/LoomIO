@@ -525,6 +525,11 @@ Message *decode_message(CephContext *cct, int crcflags,
   case MSG_OSD_SCRUB:
     m = new MOSDScrub;
     break;
+
+  case MSG_OSD_STATUS:
+    m = new MOSDStatus;
+    break;
+
   case MSG_OSD_SCRUB_RESERVE:
     m = new MOSDScrubReserve;
     break;

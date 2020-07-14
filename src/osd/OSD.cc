@@ -7692,11 +7692,11 @@ void OSD::ms_fast_preprocess(Message *m)
     }
   }
   
-  if(m->get_type() == MSG_OSD_STATUS){
-    dout(0)<<" mydebug: get MSG_OSD_STATUS"<<dendl;
-  }else{
-    dout(0)<<" mydebug: no MSG_OSD_STATUS"<<dendl;
-  }
+  // if(m->get_type() == MSG_OSD_STATUS){
+  //   dout(0)<<" mydebug: get MSG_OSD_STATUS"<<dendl;
+  // }else{
+  //   dout(0)<<" mydebug: no MSG_OSD_STATUS"<<dendl;
+  // }
   
 }
 
@@ -7887,6 +7887,10 @@ void OSD::_dispatch(Message *m)
 
   case MSG_OSD_FORCE_RECOVERY:
     handle_force_recovery(m);
+    break;
+
+  case MSG_OSD_STATUS:
+    dout(0) << " mydebug: get MSG_OSD_STATUS " << dendl;
     break;
 
     // -- need OSDMap --

@@ -1803,13 +1803,6 @@ void Pipe::reader()
       ldout(msgr->cct,10) << "reader got message "
 	       << m->get_seq() << " " << m << " " << *m
 	       << dendl;
-      ofstream out_file;
-      out_file.open("/users/yushua/pip.log",ios::out|ios::app);
-      //ldout(msgr->cct,0) << " mydebug: pipe address"<< this->get_peer_addr() << dendl;
-      //ldout(msgr->cct,0) << " mydebug: before fast_preprocess"<< dendl;
-      out_file<<" mydebug: pipe address"<< this->get_peer_addr()<<"\n";
-      out_file<<" mydebug: before fast_preprocess"<<"\n";
-      out_file.close();
       in_q->fast_preprocess(m);
 
       if (delay_thread) {
