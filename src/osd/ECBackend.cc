@@ -1696,7 +1696,21 @@ int ECBackend::get_min_avail_to_read_shards(
     redisReply *reply;
     redisReply *reply2;
 
-    vector<int> &queue_map = osd->queue_map;
+    //vector<int> &queue_map = osd->queue_map; //primitive gio
+    //使用disk_latency_map以及pending_list_size_map来计算出新的queuemap
+    vector<int> queue_map(NUM_OSD);
+    int queue_map_size = 0;
+    schedule_lock.lock();
+    for(auto it : osd->osd->pending_list_size_map){
+      int cur_osd = it.first;
+      int cur_size = it.second;
+      queue_map[cur_osd] = cur_size;
+      queue_map_size++;
+    }
+    if(queue_map_size<NUM_OSD){
+      dout(0)<<" mydebug: did not get complete queue_map"<<dendl;
+    }
+
     redisContext *context = osd->redis_context;
     //translate to have2
     int have2[EC_K+EC_M];
@@ -1871,7 +1885,8 @@ int ECBackend::get_min_avail_to_read_shards(
       }
       sort(load_of_shard.begin(),load_of_shard.end(),mycmp2);
       for(int j=0;j<EC_K;j++){//调度最小的k个
-          queue_map[load_of_shard[j].first]++;
+          //queue_map[load_of_shard[j].first]++;//for primitive gio
+          osd->osd->pending_list_size_map[j]++;
       }
       if(i==my_id){//根据调度把自己的have给去了
         for(int j=EC_K;j<(EC_K+EC_M);j++){
@@ -1887,7 +1902,8 @@ int ECBackend::get_min_avail_to_read_shards(
         }
       }
     }
-    dout(0)<<" mydebug:after_schedule:"<<queue_map<<dendl;
+    dout(0)<<" mydebug:after_schedule:"<<osd->osd->pending_list_size_map<<dendl;
+    schedule_lock.unlock();
 
   }else{
     ;
