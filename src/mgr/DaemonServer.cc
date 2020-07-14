@@ -545,24 +545,26 @@ bool DaemonServer::handle_report(MMgrReport *m)
         if(ready_flag == 1){//当全部osd的地址都准备好的时候
           //准备好msg,先上锁以防数据被其他report修改
           dout(0)<<" mydebug: data & ref is ready!"<<dendl;
-          // MOSDStatus *status_message = new MOSDStatus();
-          // status_message->osd_disk_read_time_map = osd_disk_read_time_map;
-          // status_message->osd_pending_list_size_map = osd_pending_list_size_map;
-          // gio_update_mutex.unlock();         
-          // for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
-          //   if (osd_cons.find(i) != osd_cons.end()) {
-          //     for (auto& con : osd_cons.find(i)->second) {
-          //       if(con->is_connected()){
-          //         dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
-          //         con->send_message(status_message);
-          //       }else{
-          //         dout(0)<<" mydebug: is not connected "<<i<<dendl;
-          //       } 
-          //     }                  
-          //   }else{
-          //     dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
-          //   }        
-          // }
+          MOSDStatus *status_message = new MOSDStatus();
+          status_message->osd_disk_read_time_map = osd_disk_read_time_map;
+          status_message->osd_pending_list_size_map = osd_pending_list_size_map;
+          gio_update_mutex.unlock();         
+          for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
+            if (osd_cons.find(i) != osd_cons.end()) {
+              for (auto& con : osd_cons.find(i)->second) {
+                if(con->is_connected()){
+                  dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
+                  con->send_message(status_message);
+                }else{
+                  dout(0)<<" mydebug: is not connected "<<i<<dendl;
+                } 
+              }                  
+            }else{
+              dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
+            }        
+          }
+        }else{
+          gio_update_mutex.unlock();
         }
       }
     }
