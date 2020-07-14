@@ -545,8 +545,12 @@ bool DaemonServer::handle_report(MMgrReport *m)
         for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
           if (osd_cons.find(i) != osd_cons.end()) {
             auto temp_ref = *(osd_cons[i].begin());
-            temp_ref->send_message(status_message);
-            dout(0)<<" mydebug: send status_message to OSD."<<i<<dendl;
+            if(temp_ref->is_connected()){
+              temp_ref->send_message(status_message);
+              dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<temp_ref<<dendl;
+            }else{
+              dout(0)<<" mydebug: is not connected "<<i<<dendl;
+            }                   
           }else{
             dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
           }        
