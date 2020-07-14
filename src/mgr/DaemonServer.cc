@@ -31,6 +31,7 @@
 #include "messages/MPGStats.h"
 #include "messages/MOSDScrub.h"
 #include "messages/MOSDForceRecovery.h"
+#include "messages/MOSDStatus.h"
 #include "common/errno.h"
 
 #define dout_context g_ceph_context
@@ -517,15 +518,39 @@ bool DaemonServer::handle_report(MMgrReport *m)
     //如果report是从0号发来的时候publish状态
     int osd_num = 8;
     if(key.first=="osd"&&key.second=="0"){
-      dout(0)<<" mydebug: start to publish"<<dendl;
+      int ready_flag = 1;
+      dout(0)<<" mydebug: check if ready"<<dendl;
       for(int i=0;i<osd_num;i++){
         if (osd_cons.find(i) != osd_cons.end()) {
           auto temp_size = osd_cons[i].size();
           auto temp_ref = *(osd_cons[i].begin());
           dout(0)<<" mydebug: ref of osd"<<i<<": "<<temp_ref<<" size="<<temp_size<<dendl;
         }else{
-          dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
+          ready_flag = 0; //有的osd的地址还没建立好
+          dout(0)<<" mydebug: ref is not ready!"<<dendl;
         }        
+      }
+      gio_update_mutex.lock(); //检查两个map的数据是不是已经是8个了
+      if(osd_disk_read_time_map.size()!=osd_num || osd_pending_list_size_map.size()!=osd_num){
+        dout(0)<<" mydebug: data is not ready!"<<dendl;
+        ready_flag = 0;
+        gio_update_mutex.unlock();
+      }  
+      if(ready_flag == 1){//当全部osd的地址都准备好的时候
+        //准备好msg,先上锁以防数据被其他report修改
+        MOSDStatus *status_message = new MOSDStatus();
+        status_message->osd_disk_read_time_map = osd_disk_read_time_map;
+        status_message->osd_pending_list_size_map = osd_pending_list_size_map;
+        gio_update_mutex.unlock();         
+        for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
+          if (osd_cons.find(i) != osd_cons.end()) {
+            auto temp_ref = *(osd_cons[i].begin());
+            temp_ref->send_message(status_message);
+            dout(0)<<" mydebug: send status_message to OSD."<<i<<dendl;
+          }else{
+            dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
+          }        
+        }
       }
     }
 

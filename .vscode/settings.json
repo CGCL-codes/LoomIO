@@ -11,6 +11,9 @@
         "utility": "cpp",
         "string_view": "cpp",
         "rope": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "bitset": "cpp",
+        "cstdlib": "cpp",
+        "shared_mutex": "cpp"
     }
 }

@@ -7691,6 +7691,13 @@ void OSD::ms_fast_preprocess(Message *m)
       }
     }
   }
+  
+  if(m->get_type() == MSG_OSD_STATUS){
+    dout(0)<<" mydebug: get MSG_OSD_STATUS"<<dendl;
+  }else{
+    dout(0)<<" mydebug: no MSG_OSD_STATUS"<<dendl;
+  }
+  
 }
 
 bool OSD::ms_get_authorizer(int dest_type, AuthAuthorizer **authorizer, bool force_new)
