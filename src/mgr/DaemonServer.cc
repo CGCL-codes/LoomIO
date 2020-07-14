@@ -529,7 +529,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
               dout(0)<<" mydebug: send status_message to OSD.1"<<", ref="<<con->get_peer_addr()<<dendl;
               con->send_message(status_message);
             }else{
-              dout(0)<<" mydebug: is not connected "<<i<<dendl;
+              dout(0)<<" mydebug: is not connected "<<dendl;
             } 
           }         
       }
