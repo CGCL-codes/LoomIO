@@ -1707,6 +1707,7 @@ int ECBackend::get_min_avail_to_read_shards(
       queue_map[cur_osd] = cur_size;
       queue_map_size++;
     }
+    osd->osd->schedule_lock.unlock();
     if(queue_map_size<NUM_OSD){
       dout(0)<<" mydebug: did not get complete queue_map"<<dendl;
     }
@@ -1874,6 +1875,7 @@ int ECBackend::get_min_avail_to_read_shards(
       i%=NUM_SCHEDULER;
     }
     //已经获得到了schedule map，进行调度
+    osd->osd->schedule_lock.lock();
     for(int i =0;i<NUM_SCHEDULER;i++){
       if(schedule_map[i][0]==-1){
         continue;//跳过没有收到信息的osd
