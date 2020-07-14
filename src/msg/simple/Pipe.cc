@@ -1802,6 +1802,8 @@ void Pipe::reader()
       ldout(msgr->cct,10) << "reader got message "
 	       << m->get_seq() << " " << m << " " << *m
 	       << dendl;
+      ldout(msgr->cct,0) << " mydebug: pipe address"<< this->get_peer_addr() << dendl;
+      ldout(msgr->cct,0) << " mydebug: before fast_preprocess"<< dendl;
       in_q->fast_preprocess(m);
 
       if (delay_thread) {
