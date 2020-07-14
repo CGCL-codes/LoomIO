@@ -499,63 +499,65 @@ bool DaemonServer::handle_report(MMgrReport *m)
 
     //for gio
     //更新osd_disk_read_time_map以及osd_pending_list_size_map
-    gio_update_mutex.lock();
-    auto instances_1 = daemon_counters.instances.find("osd.disk_read_latency");
-    if(instances_1!=daemon_counters.instances.end()){
-      osd_disk_read_time_map[std::stoi(key.second)] = instances_1->second.get_current();
-      dout(0)<<" mydebug: updata osd_disk_read_time_map"<<dendl;
-    }else{
-      dout(0)<<" mydebug: can not updata osd_disk_read_time_map"<<dendl;
-    }
-    auto instances_2 = daemon_counters.instances.find("osd.pending_sub_read_num");
-    if(instances_2!=daemon_counters.instances.end()){
-      osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
-      dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
-    }else{
-      dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
-    }
-    gio_update_mutex.unlock();
-    //如果report是从0号发来的时候publish状态
-    int osd_num = 8;
-    if(key.first=="osd"&&key.second=="0"){
-      int ready_flag = 1;
-      dout(0)<<" mydebug: when handle report from OSD."<<key.second<<" check if ready:"<<dendl;
-      for(int i=0;i<osd_num;i++){
-        if (osd_cons.find(i) != osd_cons.end()) {
-          for (auto& con : osd_cons.find(i)->second) {
-            dout(0)<<" mydebug: ref of osd"<<i<<": "<<con->get_peer_addr()<<dendl;
-          }
-        }else{
-          ready_flag = 0; //有的osd的地址还没建立好
-          dout(0)<<" mydebug: ref is not ready for OSD."<<i<<dendl;
-        }        
+    if(key.first=="osd"){
+      gio_update_mutex.lock();
+      auto instances_1 = daemon_counters.instances.find("osd.disk_read_latency");
+      if(instances_1!=daemon_counters.instances.end()){
+        osd_disk_read_time_map[std::stoi(key.second)] = instances_1->second.get_current();
+        dout(0)<<" mydebug: updata osd_disk_read_time_map"<<dendl;
+      }else{
+        dout(0)<<" mydebug: can not updata osd_disk_read_time_map"<<dendl;
       }
-      gio_update_mutex.lock(); //检查两个map的数据是不是已经是8个了
-      if(osd_disk_read_time_map.size()!=osd_num || osd_pending_list_size_map.size()!=osd_num){
-        dout(0)<<" mydebug: data is not ready!"<<dendl;
-        ready_flag = 0;
-        gio_update_mutex.unlock();
-      }  
-      if(ready_flag == 1){//当全部osd的地址都准备好的时候
-        //准备好msg,先上锁以防数据被其他report修改
-        dout(0)<<" mydebug: data & ref is ready!"<<dendl;
-        MOSDStatus *status_message = new MOSDStatus();
-        status_message->osd_disk_read_time_map = osd_disk_read_time_map;
-        status_message->osd_pending_list_size_map = osd_pending_list_size_map;
-        gio_update_mutex.unlock();         
-        for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
+      auto instances_2 = daemon_counters.instances.find("osd.pending_sub_read_num");
+      if(instances_2!=daemon_counters.instances.end()){
+        osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
+        dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
+      }else{
+        dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
+      }
+      gio_update_mutex.unlock();
+      //如果report是从0号发来的时候publish状态
+      int osd_num = 8;
+      if(key.first=="osd"&&key.second=="0"){
+        int ready_flag = 1;
+        dout(0)<<" mydebug: when handle report from OSD."<<key.second<<" check if ready:"<<dendl;
+        for(int i=0;i<osd_num;i++){
           if (osd_cons.find(i) != osd_cons.end()) {
             for (auto& con : osd_cons.find(i)->second) {
-              if(con->is_connected()){
-                dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
-                con->send_message(status_message);
-              }else{
-                dout(0)<<" mydebug: is not connected "<<i<<dendl;
-              } 
-            }                  
+              dout(0)<<" mydebug: ref of osd"<<i<<": "<<con->get_peer_addr()<<dendl;
+            }
           }else{
-            dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
+            ready_flag = 0; //有的osd的地址还没建立好
+            dout(0)<<" mydebug: ref is not ready for OSD."<<i<<dendl;
           }        
+        }
+        gio_update_mutex.lock(); //检查两个map的数据是不是已经是8个了
+        if(osd_disk_read_time_map.size()!=osd_num || osd_pending_list_size_map.size()!=osd_num){
+          dout(0)<<" mydebug: data is not ready!"<<dendl;
+          ready_flag = 0;
+          gio_update_mutex.unlock();
+        }  
+        if(ready_flag == 1){//当全部osd的地址都准备好的时候
+          //准备好msg,先上锁以防数据被其他report修改
+          dout(0)<<" mydebug: data & ref is ready!"<<dendl;
+          MOSDStatus *status_message = new MOSDStatus();
+          status_message->osd_disk_read_time_map = osd_disk_read_time_map;
+          status_message->osd_pending_list_size_map = osd_pending_list_size_map;
+          gio_update_mutex.unlock();         
+          for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
+            if (osd_cons.find(i) != osd_cons.end()) {
+              for (auto& con : osd_cons.find(i)->second) {
+                if(con->is_connected()){
+                  dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
+                  con->send_message(status_message);
+                }else{
+                  dout(0)<<" mydebug: is not connected "<<i<<dendl;
+                } 
+              }                  
+            }else{
+              dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
+            }        
+          }
         }
       }
     }
