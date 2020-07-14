@@ -419,7 +419,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
   }
   key.second = m->daemon_name;
 
-  dout(0) << " mydebug: from" << m->get_connection() << " key=" << key << dendl;
+  //dout(0) << " mydebug: from" << m->get_connection() << " key=" << key << dendl;
 
   if (m->get_connection()->get_peer_type() == entity_name_t::TYPE_CLIENT &&
       m->service_name.empty()) {
