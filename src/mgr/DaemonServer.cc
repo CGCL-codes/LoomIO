@@ -523,12 +523,17 @@ bool DaemonServer::handle_report(MMgrReport *m)
         dout(0)<<" mydebug: when handle report from OSD."<<key.second<<" check if ready:"<<dendl;
         for(int i=0;i<osd_num;i++){
           if (osd_cons.find(i) != osd_cons.end()) {
-            for (auto& con : osd_cons.find(i)->second) {
-              dout(0)<<" mydebug: ref of osd"<<i<<": "<<con->get_peer_addr()<<dendl;
+            if(osd_cons.find(i)->second.size()==0){
+              ready_flag = 0;
+              dout(0)<<" mydebug: cons set is empty in OSD."<<i<<dendl;
+            }else{
+              for (auto& con : osd_cons.find(i)->second) {
+                dout(0)<<" mydebug: ref of osd"<<i<<": "<<con->get_peer_addr()<<dendl;
+              }
             }
           }else{
             ready_flag = 0; //有的osd的地址还没建立好
-            dout(0)<<" mydebug: ref is not ready for OSD."<<i<<dendl;
+            dout(0)<<" mydebug: osd_cons has no OSD."<<i<<dendl;
           }        
         }
         gio_update_mutex.lock(); //检查两个map的数据是不是已经是8个了
