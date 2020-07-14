@@ -544,7 +544,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
         gio_update_mutex.unlock();         
         for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
           if (osd_cons.find(i) != osd_cons.end()) {
-            auto temp_ref = *(osd_cons[i].begin());
+            auto& temp_ref = osd_cons[i].begin();
             if(temp_ref->is_connected()){
               temp_ref->send_message(status_message);
               dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<temp_ref<<dendl;
