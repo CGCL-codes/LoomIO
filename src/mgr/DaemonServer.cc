@@ -530,7 +530,15 @@ bool DaemonServer::handle_report(MMgrReport *m)
                   MOSDStatus *status_message = new MOSDStatus();
                   status_message->osd_disk_read_time_map = osd_disk_read_time_map;
                   status_message->osd_pending_list_size_map = osd_pending_list_size_map;
-                  dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<", pending list="<<status_message->osd_pending_list_size_map<<dendl;
+                  int send_flag = 0;
+                  for(auto temp:osd_pending_list_size_map){
+                    if(temp.second != 0){
+                      send_flag=1;
+                    }
+                  }
+                  if(send_flag){
+                    dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<", pending list="<<status_message->osd_pending_list_size_map<<dendl;
+                  }
                   con->send_message(status_message);
                 }else{
                   dout(0)<<" mydebug: is not connected "<<dendl;
