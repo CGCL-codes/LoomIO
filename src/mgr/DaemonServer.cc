@@ -520,17 +520,17 @@ bool DaemonServer::handle_report(MMgrReport *m)
         int osd_num = 8;
       if(key.first=="osd"&&key.second=="0"){
         //先判断map里面有没有八个
+        gio_update_mutex.lock();
         if(osd_disk_read_time_map.size()==osd_num && osd_pending_list_size_map.size()==osd_num){
           for(int i=0;i<osd_num;i++){ //对于0个osd
             if(osd_cons.find(i)!=osd_cons.end()){
               for (auto& con : osd_cons.find(i)->second) {
                 if(con->is_connected()){
                   dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
-                  gio_update_mutex.lock();
                   MOSDStatus *status_message = new MOSDStatus();
                   status_message->osd_disk_read_time_map = osd_disk_read_time_map;
                   status_message->osd_pending_list_size_map = osd_pending_list_size_map;
-                  gio_update_mutex.unlock();
+
                   con->send_message(status_message);
                 }else{
                   dout(0)<<" mydebug: is not connected "<<dendl;
@@ -541,7 +541,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
         }else{
           dout(0)<<" mydebug: two map is not ready!"<<dendl;
         }
-        
+        gio_update_mutex.unlock();
       }
     
       // if(key.first=="osd"&&key.second=="0"){
