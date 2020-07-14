@@ -522,7 +522,8 @@ bool DaemonServer::handle_report(MMgrReport *m)
         //先判断map里面有没有八个
         gio_update_mutex.lock();
         if(osd_disk_read_time_map.size()==osd_num && osd_pending_list_size_map.size()==osd_num){
-          for(int i=0;i<osd_num;i++){ //对于0个osd
+          int first_flag=1;
+          for(int i=0;i<osd_num;i++){ //对于8个osd
             if(osd_cons.find(i)!=osd_cons.end()){
               for (auto& con : osd_cons.find(i)->second) {
                 if(con->is_connected()){
@@ -536,8 +537,9 @@ bool DaemonServer::handle_report(MMgrReport *m)
                       send_flag=1;
                     }
                   }
-                  if(send_flag){
+                  if(send_flag&&first_flag){
                     dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<", pending list="<<status_message->osd_pending_list_size_map<<dendl;
+                    first_flag=0;
                   }
                   con->send_message(status_message);
                 }else{
