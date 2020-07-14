@@ -58,6 +58,7 @@ using namespace std;
 #include "osd/mClockOpClassQueue.h"
 #include "osd/mClockClientQueue.h"
 #include "messages/MOSDOp.h"
+#include "messages/MOSDStatus.h"
 #include "include/Spinlock.h"
 #include "common/EventTrace.h"
 
