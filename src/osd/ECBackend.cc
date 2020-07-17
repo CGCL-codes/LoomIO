@@ -1674,13 +1674,26 @@ int ECBackend::get_min_avail_to_read_shards(
   // }
   /****k-optimal***/
   if(osd->k_optimal){
-    int load_map[] = {0,1,2,3,4,5,6,7};
+    vector<int> queue_map(NUM_OSD);
+    int queue_map_size = 0;
+    osd->osd->schedule_lock.lock();
+    for(auto it : osd->osd->pending_list_size_map){
+      int cur_osd = it.first;
+      int cur_size = it.second;
+      queue_map[cur_osd] = cur_size;
+      queue_map_size++;
+    }
+    osd->osd->schedule_lock.unlock();
+    if(queue_map_size<NUM_OSD){
+      dout(0)<<" mydebug: did not get complete queue_map"<<dendl;
+    }
+    //int load_map[] = {0,1,2,3,4,5,6,7};//primitive k-optimal
     vector<pair<shard_id_t,int>> load_of_shard;
     for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
       i != shards.end();
       ++i)
     {
-      load_of_shard.push_back(make_pair(i->first, load_map[i->second.osd]));
+      load_of_shard.push_back(make_pair(i->first, queue_map[i->second.osd]));
     }
     sort(load_of_shard.begin(),load_of_shard.end(),mycmp);
     have.erase(load_of_shard[0].first);
