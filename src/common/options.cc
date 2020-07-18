@@ -4420,7 +4420,7 @@ std::vector<Option> get_global_options() {
                      "contain keyring."),
 
     Option("mgr_tick_period", Option::TYPE_INT, Option::LEVEL_ADVANCED)
-    .set_default(2)
+    .set_default(5)
     .add_service("mgr")
     .set_description("Period in seconds of beacon messages to monitor"),
 
