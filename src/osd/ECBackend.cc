@@ -1954,7 +1954,7 @@ int ECBackend::get_min_avail_to_read_shards(
     to_read->insert(shards[shard_id_t(*i)]);
   }
   
-  for(set<pg_shart_t>::iterator i = to_read.begin();i!=to_read.end();i++){
+  for(set<pg_shard_t>::iterator i = to_read.begin();i!=to_read.end();i++){
     after_str+=to_string(i->osd);
   }
 
