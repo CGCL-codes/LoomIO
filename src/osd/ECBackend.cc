@@ -1646,7 +1646,14 @@ int ECBackend::get_min_avail_to_read_shards(
   set<pg_shard_t> error_shards;
 
   get_all_avail_shards(hoid, error_shards, have, shards, for_recovery);
+  string before_str="";
+  string after_str="";
+  for(auto i:shards){
+    before_str+=to_string(i->second.osd);
+  }
   
+  dout(0) << ": mydebug: schedule_info#before,"<< hoid.oid.name << "," <<before_str<<"#"<< dendl;
+
   //straggler = 6 & 7
   // if(osd->cct->_conf->osd_imbalance_pattern != 0){
   //   for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
@@ -1927,6 +1934,7 @@ int ECBackend::get_min_avail_to_read_shards(
 
 
 
+
   set<int> need;
   int r = ec_impl->minimum_to_decode(want, have, &need);
   if (r < 0)
@@ -1945,6 +1953,13 @@ int ECBackend::get_min_avail_to_read_shards(
     assert(shards.count(shard_id_t(*i)));
     to_read->insert(shards[shard_id_t(*i)]);
   }
+  
+  for(auto i:to_read){
+    after_str+=to_string(i->osd);
+  }
+
+  dout(0) << ": mydebug: schedule_info#after,"<< hoid.oid.name << "," <<after_str<<","<<ceph_clock_now()<<"#"<< dendl;
+
   return 0;
 }
 
