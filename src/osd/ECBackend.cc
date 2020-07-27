@@ -1940,12 +1940,16 @@ int ECBackend::get_min_avail_to_read_shards(
   if (r < 0)
     return r;
 
+  
   if (do_redundant_reads) {
       need.swap(have);
   } 
 
   if (!to_read)
     return 0;
+
+  dout(0) << ": mydebug: schedule_info#need,"<<need<<"#"<< dendl;
+  dout(0) << ": mydebug: schedule_info#do_redundant_reads,"<<do_redundant_reads<<"#"<< dendl;
 
   for (set<int>::iterator i = need.begin();
        i != need.end();
