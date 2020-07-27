@@ -1648,7 +1648,7 @@ int ECBackend::get_min_avail_to_read_shards(
   get_all_avail_shards(hoid, error_shards, have, shards, for_recovery);
   string before_str="";
   string after_str="";
-  for(auto i:shards){
+  for(map<shard_id_t, pg_shard_t>::iterator i = shards.begin();i != shards.end();++i){
     before_str+=to_string(i->second.osd);
   }
   
@@ -1954,7 +1954,7 @@ int ECBackend::get_min_avail_to_read_shards(
     to_read->insert(shards[shard_id_t(*i)]);
   }
   
-  for(auto i:to_read){
+  for(set<pg_shart_t>::iterator i = to_read.begin();i!=to_read.end();i++){
     after_str+=to_string(i->osd);
   }
 
