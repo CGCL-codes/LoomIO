@@ -792,8 +792,8 @@ bool ECBackend::_handle_message(
     reply->op.wait_for_service_time = ceph_clock_now() - _op->get_req()->get_recv_stamp(); 
 		//reply->op.queue_size = _op->get_queue_size_when_enqueued();
 		reply->op.send_time = op->op.send_time;
-    reply->op.queue_size = op->read_queue_size;
-    reply->op.queue_size_write = op->write_queue_size;
+    reply->op.queue_size = _op->read_queue_size;
+    reply->op.queue_size_write = _op->write_queue_size;
 
     handle_sub_read(op->op.from, op->op, &(reply->op), _op->pg_trace);
     reply->trace = _op->pg_trace;
