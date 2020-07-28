@@ -787,7 +787,7 @@ bool ECBackend::_handle_message(
     reply->map_epoch = get_parent()->get_epoch();
     reply->min_epoch = get_parent()->get_interval_start_epoch();
 
-    //reply->op.wait_for_service_time = _op->get_dequeued_time() - _op->get_enqueued_time(); 
+    reply->op.wait_for_service_time = ceph_clock_now() - op->get_req()->get_recv_stamp(); 
 		//reply->op.queue_size = _op->get_queue_size_when_enqueued();
 		reply->op.send_time = op->op.send_time;
     reply->op.queue_size = osd->osd->pending_sub_read_num+1;
@@ -807,7 +807,7 @@ bool ECBackend::_handle_message(
 
     const Message* m = _op->get_req();
     utime_t p_time =  m->get_recv_stamp() - op->op.send_time;
-    dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<","<<op->op.disk_read_time<<","<<op->op.queue_size<<"#"<<dendl;
+    dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<","<<op->op.disk_read_time<<","<<op->op.queue_size<<","<<op->op.wait_for_service_time<<"#"<<dendl;
     //<<","<<queue_size<<","<<wait_for_service_time<<","<<disk_read_time<<
     RecoveryMessages rm;
     handle_sub_read_reply(op->op.from, op->op, &rm, _op->pg_trace);
