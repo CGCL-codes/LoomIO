@@ -1882,13 +1882,12 @@ int ECBackend::get_min_avail_to_read_shards(
       }
     end:            
       if(num_got>=(osd->gio_coordination_granularity-1)){//首先保证至少获得这么多 
-        cout<<"have got all!"<<dendl;
+        dout(0)<<"have got all!"<<dendl;
         break;
         //如果全部拿到了，就退出                   
       }
       utime_t cur_time = ceph_clock_now();
       if((cur_time-start_time)>time_out_interval){//如果实在等不到了，也推出
-        //cout<<"dont wait anymore"<<endl;
         dout(0)<<"dont wait anymore"<<dendl;
         break;
       }
