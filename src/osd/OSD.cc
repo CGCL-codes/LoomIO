@@ -10290,7 +10290,7 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
     op_obj_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }else if(op_type == MSG_OSD_EC_READ_REPLY){
     op_reply_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
-  }else if(op_type == MSG_OSD_EC_READ){
+  }else if(op_type == MSG_OSD_EC_READ || op_type == MSG_OSD_EC_WRITE){
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
     pending_sub_read_num++;
     logger->set(l_osd_pending_sub_read_num,pending_sub_read_num);
