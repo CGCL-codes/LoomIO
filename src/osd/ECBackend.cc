@@ -787,7 +787,7 @@ bool ECBackend::_handle_message(
     reply->map_epoch = get_parent()->get_epoch();
     reply->min_epoch = get_parent()->get_interval_start_epoch();
 
-    reply->op.wait_for_service_time = ceph_clock_now() - op->get_req()->get_recv_stamp(); 
+    reply->op.wait_for_service_time = ceph_clock_now() - _op->get_req()->get_recv_stamp(); 
 		//reply->op.queue_size = _op->get_queue_size_when_enqueued();
 		reply->op.send_time = op->op.send_time;
     reply->op.queue_size = osd->osd->pending_sub_read_num+1;
