@@ -1004,7 +1004,10 @@ void ECBackend::handle_sub_write(
   tls.reserve(2);
   tls.push_back(std::move(op.t));
   tls.push_back(std::move(localt));
+
+  start_write_time = ceph_clock_now();
   get_parent()->queue_transactions(tls, msg);
+  dout(0) << "mydebug: write latency:" << ceph_clock_now()-start_write_time << dendl;
 }
 
 void ECBackend::handle_sub_read(
@@ -1053,6 +1056,8 @@ void ECBackend::handle_sub_read(
       } else {
         end_read_time = ceph_clock_now();
         reply->disk_read_time = end_read_time -start_read_time;
+        dout(0)<< ": mydebug: read latency:"<<end_read_time - start_read_time <<dendl;
+
         dout(20) << __func__ << " read request=" << j->get<1>() << " r=" << r << " len=" << bl.length() << dendl;
 	reply->buffers_read[i->first].push_back(
 	  make_pair(
