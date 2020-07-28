@@ -116,6 +116,7 @@ struct ECSubRead {
 WRITE_CLASS_ENCODER_FEATURES(ECSubRead)
 
 struct ECSubReadReply {
+  int queue_size_write;
   int queue_size;
   utime_t wait_for_service_time;
   utime_t disk_read_time;

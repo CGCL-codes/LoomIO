@@ -11068,9 +11068,9 @@ int BlueStore::_write(TransContext *txc,
     r = -E2BIG;
   } else {
     _assign_nid(txc, o);
-    utime_t start_write_time = ceph_clock_now();
+    //utime_t start_write_time = ceph_clock_now();
     r = _do_write(txc, c, o, offset, length, bl, fadvise_flags);
-    dout(0) << "mydebug: _do_write latency:" << ceph_clock_now()-start_write_time << dendl;
+    //dout(0) << "mydebug: _do_write latency:" << ceph_clock_now()-start_write_time << dendl;
     txc->write_onode(o);
   }
   dout(10) << __func__ << " " << c->cid << " " << o->oid

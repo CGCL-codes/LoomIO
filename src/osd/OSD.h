@@ -1262,6 +1262,7 @@ public:
 
   //for counting
   atomic<int> pending_sub_read_num;
+  atomic<int> pending_sub_write_num;
   //for gio
   std::mutex schedule_lock;
   map<int,int> disk_latency_map;

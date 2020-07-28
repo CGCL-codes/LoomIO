@@ -763,6 +763,8 @@ bool ECBackend::_handle_message(
     // NOTE: this is non-const because handle_sub_write modifies the embedded
     // ObjectStore::Transaction in place (and then std::move's it).  It does
     // not conflict with ECSubWrite's operator<<.
+    osd->osd->pending_sub_write_num--;
+    
     MOSDECSubOpWrite *op = static_cast<MOSDECSubOpWrite*>(
       _op->get_nonconst_req());
     parent->maybe_preempt_replica_scrub(op->op.soid);
@@ -790,7 +792,8 @@ bool ECBackend::_handle_message(
     reply->op.wait_for_service_time = ceph_clock_now() - _op->get_req()->get_recv_stamp(); 
 		//reply->op.queue_size = _op->get_queue_size_when_enqueued();
 		reply->op.send_time = op->op.send_time;
-    reply->op.queue_size = osd->osd->pending_sub_read_num+1;
+    reply->op.queue_size = op->read_queue_size;
+    reply->op.queue_size_write = op->write_queue_size;
 
     handle_sub_read(op->op.from, op->op, &(reply->op), _op->pg_trace);
     reply->trace = _op->pg_trace;
@@ -807,7 +810,7 @@ bool ECBackend::_handle_message(
 
     const Message* m = _op->get_req();
     utime_t p_time =  m->get_recv_stamp() - op->op.send_time;
-    dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<","<<op->op.disk_read_time<<","<<op->op.queue_size<<","<<op->op.wait_for_service_time<<"#"<<dendl;
+    dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<","<<op->op.disk_read_time<<","<<op->op.queue_size<<","<<op->op.wait_for_service_time<<","<<op->op.queue_size_write<<"#"<<dendl;
     //<<","<<queue_size<<","<<wait_for_service_time<<","<<disk_read_time<<
     RecoveryMessages rm;
     handle_sub_read_reply(op->op.from, op->op, &rm, _op->pg_trace);
@@ -1005,9 +1008,9 @@ void ECBackend::handle_sub_write(
   tls.push_back(std::move(op.t));
   tls.push_back(std::move(localt));
 
-  utime_t start_write_time = ceph_clock_now();
+  //utime_t start_write_time = ceph_clock_now();
   get_parent()->queue_transactions(tls, msg);
-  dout(0) << "mydebug: write latency:" << ceph_clock_now()-start_write_time << dendl;
+  //dout(0) << "mydebug: write latency:" << ceph_clock_now()-start_write_time << dendl;
 }
 
 void ECBackend::handle_sub_read(
