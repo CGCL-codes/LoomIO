@@ -1766,7 +1766,8 @@ int ECBackend::get_min_avail_to_read_shards(
       gettimeofday (&tv , &tz);
       //cout<<tv.tv_usec<<endl;
       reply = (redisReply *)redisCommand(context, "set %s %s", info_key.c_str(),info_str.c_str());
-      reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
+      //reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
+      reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
       reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),tv.tv_usec);
       reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),tv.tv_sec);
       //reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
@@ -1780,11 +1781,11 @@ int ECBackend::get_min_avail_to_read_shards(
 			utime_t start_time = ceph_clock_now(); 
       while(1){ //如果存在就等待拿的是不是差不多了
         reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
-        if(stoi(string(reply->str)) <=0){
+        if(stoi(string(reply->str)) >= (osd->gio_coordination_granularity-1)){
           //当全部取完时，可以退出
           //cout<<info_key<<" has been consumed, start next!"<<endl;
-          dout(0)<<info_key<<" has been consumed, start next!"<<dendl;
-          //break;
+          dout(0)<<info_key<<" has been enoughly consumed, start next!"<<dendl;
+          break;
         }       
         utime_t cur_time = ceph_clock_now();
         if((cur_time-start_time)>time_out_interval){
@@ -1799,7 +1800,8 @@ int ECBackend::get_min_avail_to_read_shards(
       gettimeofday (&tv , &tz);
       //cout<<"new time_stamp"<<tv.tv_sec<<"."<<tv.tv_usec<<endl;
       reply = (redisReply *)redisCommand(context, "set %s %s", info_key.c_str(),info_str.c_str());
-      reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
+      //reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
+      reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
       reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),tv.tv_usec);
       reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),tv.tv_sec);
       //reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
@@ -1864,7 +1866,8 @@ int ECBackend::get_min_avail_to_read_shards(
         string temp_str = reply->str;
 
         //将目标obj的引用次数减一
-        reply = (redisReply *)redisCommand(context, "decr %s", target_num.c_str());
+        //reply = (redisReply *)redisCommand(context, "decr %s", target_num.c_str());
+        reply = (redisReply *)redisCommand(context, "incr %s", target_num.c_str());
         strtohave(temp_str,temp_have);//读出的信息存放在temp_have中，
         // for(int i=0;i<(EC_K+EC_M);i++){
         //     cout<<"strtohave:"<<temp_have[i]<<endl;
@@ -1878,12 +1881,10 @@ int ECBackend::get_min_avail_to_read_shards(
         have_got[i]=1;
       }
     end:            
-      if(num_got>=(NUM_SCHEDULER-1-can_left)){//首先保证至少获得这么多
-        if(num_got==(NUM_SCHEDULER-1)){
-          //cout<<"have got all!"<<endl;
-          break;
-        }//如果全部拿到了，就退出
-                    
+      if(num_got>=(osd->gio_coordination_granularity-1)){//首先保证至少获得这么多 
+        cout<<"have got all!"<<endl;
+        break;
+        //如果全部拿到了，就退出                   
       }
       utime_t cur_time = ceph_clock_now();
       if((cur_time-start_time)>time_out_interval){//如果实在等不到了，也推出

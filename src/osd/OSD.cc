@@ -10435,6 +10435,7 @@ const char** OSD::get_tracked_conf_keys() const
     "osd_gio",
     "osd_gio_show_interval",
     "osd_gio_wait_interval",
+    "osd_gio_coordination_granularity",
     "osd_max_backfills",
     "osd_min_recovery_priority",
     "osd_max_trimming_pgs",
@@ -10519,6 +10520,10 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
 
   if (changed.count("osd_gio_wait_interval")) {
     service.gio_wait_interval = cct->_conf->osd_gio_wait_interval;
+  }
+
+  if (changed.count("osd_gio_coordination_granularity")) {
+    service.gio_coordination_granularity = cct->_conf->osd_gio_coordination_granularity;
   }
 
   if (changed.count("osd_max_backfills")) {
