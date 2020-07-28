@@ -1882,7 +1882,7 @@ int ECBackend::get_min_avail_to_read_shards(
       }
     end:            
       if(num_got>=(osd->gio_coordination_granularity-1)){//首先保证至少获得这么多 
-        cout<<"have got all!"<<endl;
+        cout<<"have got all!"<<dendl;
         break;
         //如果全部拿到了，就退出                   
       }
