@@ -1005,7 +1005,7 @@ void ECBackend::handle_sub_write(
   tls.push_back(std::move(op.t));
   tls.push_back(std::move(localt));
 
-  start_write_time = ceph_clock_now();
+  utime_t start_write_time = ceph_clock_now();
   get_parent()->queue_transactions(tls, msg);
   dout(0) << "mydebug: write latency:" << ceph_clock_now()-start_write_time << dendl;
 }
