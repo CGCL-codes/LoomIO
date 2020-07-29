@@ -1611,7 +1611,7 @@ bool mycmp(pair<shard_id_t,int> a, pair<shard_id_t,int> b) {
 	return a.second > b.second; //降序排列，延迟大的osd放前面
 }
 
-bool mycmp2(pair<int,int> a, pair<int,int> b) {
+bool mycmp2(pair<int,float> a, pair<int,float> b) {
 	return a.second < b.second; //升序排列，延迟小的osd放前面
 }
 
@@ -1729,18 +1729,26 @@ int ECBackend::get_min_avail_to_read_shards(
 
     //vector<int> &queue_map = osd->queue_map; //primitive gio
     //使用disk_latency_map以及pending_list_size_map来计算出新的queuemap
-    vector<int> queue_map(NUM_OSD);
+    /**先算(write*write/total+read)*disk***/
+    /*****/
+    vector<float> queue_map(NUM_OSD);
     int queue_map_size = 0;
     osd->osd->schedule_lock.lock();
     for(auto it : osd->osd->pending_list_size_map){
       int cur_osd = it.first;
       int cur_size = it.second;
-      queue_map[cur_osd] = cur_size;
+      int write_size = osd->osd->pending_list_size_map_write[cur_osd];
+      float factor = (write_size*write_size/(write_size+cur_size)+cur_size)*osd->osd->disk_latency_map[cur_osd];
+      queue_map[cur_osd] = 0.33*factor-0.0165;
       queue_map_size++;
     }
     osd->osd->schedule_lock.unlock();
     if(queue_map_size<NUM_OSD){
       dout(0)<<" mydebug: did not get complete queue_map"<<dendl;
+    }else{
+      for(int i=0;i<NUM_OSD;i++){
+        dout(0)<<" queue_map["<<i<<"]="<<queue_map[i]<<dendl;
+      }
     }
 
     redisContext *context = osd->redis_context;
@@ -1912,7 +1920,7 @@ int ECBackend::get_min_avail_to_read_shards(
         continue;//跳过没有收到信息的osd
       }
       //调度就是选最少的四个
-      vector<pair<int,int>> load_of_shard;
+      vector<pair<int,float>> load_of_shard;
       for(int j=0;j<(EC_K+EC_M);j++){
         load_of_shard.push_back(make_pair(schedule_map[i][j], queue_map[schedule_map[i][j]]));
       }
