@@ -1244,6 +1244,37 @@ public:
   ~OSDService();
 };
 
+Class AverageQueue{
+public:
+  bool add_value(int data){
+    lock.lock();
+    if(data_queue.size()>=20){
+      data_queue.pop();
+      data_queue.push(data);
+    }else{
+      data_queue.push(data);
+    }
+    lock.unlock();
+  }
+  
+  int get_mean(){
+    lock.lock();
+    int sum=0;
+    for(auto i:data_queue){
+      sum+=*i;
+    }
+    return (int)(sum/data_queue.size());
+    lock.unlock();
+  }
+  
+  //AverageQueue(){}
+  ~AverageQueue(){}
+
+private:
+  std::mutex lock;
+  queue<int> data_queue;
+}
+
 class OSD : public Dispatcher,
 	    public md_config_obs_t {
   /** OSD **/
@@ -1269,6 +1300,7 @@ public:
   map<int,int> disk_latency_map;
   map<int,int> pending_list_size_map;
   map<int,int> pending_list_size_map_write;
+  AverageQueue disk_average_queue;
 
   PerfCounters* get_logger(){
     return this->logger;

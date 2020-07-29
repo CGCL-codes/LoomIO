@@ -1045,8 +1045,8 @@ void ECBackend::handle_sub_read(
 			utime_t delay_start_time = ceph_clock_now(); 
 			while(ceph_clock_now() - delay_start_time < delay_interval); 
 			utime_t delay_end_time = ceph_clock_now();
-
-      osd->osd->get_logger()->set(l_osd_disk_read_latency,(delay_interval).to_nsec()+57000000);
+      osd->osd->disk_average_queue.add_value((delay_end_time - start_read_time).to_nsec());
+      osd->osd->get_logger()->set(l_osd_disk_read_latency,osd->osd->disk_average_queue.get_mean());
       //dout(0)<< ": mydebug: basic_delay_time="<<osd->basic_delay_time <<dendl;
       //dout(0)<< ": mydebug: delay_factor="<<osd->delay_factor <<dendl;
       //dout(0)<< ": mydebug: disk_read_time="<<delay_end_time - start_read_time <<dendl;
@@ -1740,9 +1740,9 @@ int ECBackend::get_min_avail_to_read_shards(
       int cur_size = it.second;
       int write_size = osd->osd->pending_list_size_map_write[cur_osd];
       dout(0)<<" mydebug: write_size="<<write_size<<dendl;
-      float factor = (write_size*write_size/(write_size+cur_size+1)+cur_size)*osd->osd->disk_latency_map[cur_osd];
+      float factor = (write_size*write_size/(write_size+cur_size+1)+cur_size)*osd->osd->disk_latency_map[cur_osd]/1000000000;
       dout(0)<<" mydebug: factor="<<factor<<dendl;
-      queue_map[cur_osd] = 0.33*factor-0.0165+osd->osd->disk_latency_map[cur_osd];
+      queue_map[cur_osd] = 0.33*factor-0.0165+osd->osd->disk_latency_map[cur_osd]/1000000000;
       queue_map_size++;
     }
     osd->osd->schedule_lock.unlock();
