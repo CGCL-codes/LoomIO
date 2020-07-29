@@ -1246,12 +1246,15 @@ public:
 
 class AverageQueue{
 public:
-  bool add_value(int data){
+  void add_value(int data){
     lock.lock();
     if(data_queue.size()>=20){
+      sum-=data_queue.front();
       data_queue.pop();
+      sum+=data;
       data_queue.push(data);
     }else{
+      sum+=data;
       data_queue.push(data);
     }
     lock.unlock();
@@ -1259,12 +1262,9 @@ public:
   
   int get_mean(){
     lock.lock();
-    int sum=0;
-    for(auto i:data_queue){
-      sum+=*i;
-    }
-    return (int)(sum/data_queue.size());
+    int res = (int)(sum/data_queue.size());
     lock.unlock();
+    return res;
   }
   
   //AverageQueue(){}
@@ -1272,6 +1272,7 @@ public:
 
 private:
   std::mutex lock;
+  int sum=0;
   queue<int> data_queue;
 };
 
