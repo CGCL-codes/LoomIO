@@ -811,6 +811,7 @@ bool ECBackend::_handle_message(
     const Message* m = _op->get_req();
     utime_t p_time =  m->get_recv_stamp() - op->op.send_time;
     dout(0)<<":sub_info#"<< op->op.buffers_read.begin()->first.oid.name<<","<< op->op.from.osd<<","<<p_time<<","<<op->op.disk_read_time<<","<<op->op.queue_size<<","<<op->op.wait_for_service_time<<","<<op->op.queue_size_write<<"#"<<dendl;
+    //对象名称，来自哪个osd，总的latency，磁盘时间，到达时读队列的大小，服务等待时间，到达时写队列的大小
     //<<","<<queue_size<<","<<wait_for_service_time<<","<<disk_read_time<<
     RecoveryMessages rm;
     handle_sub_read_reply(op->op.from, op->op, &rm, _op->pg_trace);
