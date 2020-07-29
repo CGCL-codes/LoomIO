@@ -764,7 +764,7 @@ bool ECBackend::_handle_message(
     // ObjectStore::Transaction in place (and then std::move's it).  It does
     // not conflict with ECSubWrite's operator<<.
     osd->osd->pending_sub_write_num--;
-    osd->osd->get_logger()->set(l_osd_pending_sub_write_num,pending_sub_write_num);
+    osd->osd->get_logger()->set(l_osd_pending_sub_write_num,osd->osd->pending_sub_write_num);
     MOSDECSubOpWrite *op = static_cast<MOSDECSubOpWrite*>(
       _op->get_nonconst_req());
     parent->maybe_preempt_replica_scrub(op->op.soid);
