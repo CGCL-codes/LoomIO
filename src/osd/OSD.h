@@ -1244,7 +1244,7 @@ public:
   ~OSDService();
 };
 
-Class AverageQueue{
+class AverageQueue{
 public:
   bool add_value(int data){
     lock.lock();
