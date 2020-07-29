@@ -14,6 +14,11 @@
         "regex": "cpp",
         "bitset": "cpp",
         "cstdlib": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp"
     }
 }

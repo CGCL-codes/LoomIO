@@ -21,6 +21,7 @@ class MOSDStatus : public Message {
  public:
   map<int,int> osd_disk_read_time_map; 
   map<int,int> osd_pending_list_size_map;
+  map<int,int> osd_pending_list_size_map_write;
   
   MOSDStatus()
     : Message(MSG_OSD_STATUS) {}
@@ -37,11 +38,13 @@ public:
   void encode_payload(uint64_t features) override {
     ::encode(osd_disk_read_time_map, payload);
     ::encode(osd_pending_list_size_map, payload);
+    ::encode(osd_pending_list_size_map_write, payload);
   }
   void decode_payload() override {
     bufferlist::iterator p = payload.begin();
     ::decode(osd_disk_read_time_map, p);
     ::decode(osd_pending_list_size_map, p);
+    ::decode(osd_pending_list_size_map_write, p);
   }
 };
 

@@ -86,6 +86,7 @@ using namespace std;
 enum {
   l_osd_first = 10000,
   l_osd_pending_sub_read_num,
+  l_osd_pending_sub_write_num,
   l_osd_disk_read_latency,
   l_osd_op_wip,
   l_osd_op,
@@ -1267,6 +1268,7 @@ public:
   std::mutex schedule_lock;
   map<int,int> disk_latency_map;
   map<int,int> pending_list_size_map;
+  map<int,int> pending_list_size_map_write;
 
   PerfCounters* get_logger(){
     return this->logger;

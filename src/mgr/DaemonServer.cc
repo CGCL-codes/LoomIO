@@ -515,13 +515,20 @@ bool DaemonServer::handle_report(MMgrReport *m)
       }else{
         //dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
       }
+      auto instances_3 = daemon_counters.instances.find("osd.pending_sub_write_num");
+      if(instances_3!=daemon_counters.instances.end()){
+        osd_pending_list_size_map_write[std::stoi(key.second)] = instances_3->second.get_current();
+        //dout(0)<<" mydebug: updata osd_pending_list_size_map_write"<<dendl;
+      }else{
+        //dout(0)<<" mydebug: can not updata osd_pending_list_size_map_write"<<dendl;
+      }
       gio_update_mutex.unlock();
       //如果report是从0号发来的时候publish状态
         int osd_num = 8;
       if(key.first=="osd"&&key.second=="0"){
         //先判断map里面有没有八个
         gio_update_mutex.lock();
-        if(osd_disk_read_time_map.size()==osd_num && osd_pending_list_size_map.size()==osd_num){
+        if(osd_disk_read_time_map.size()==osd_num && osd_pending_list_size_map.size()==osd_num && osd_pending_list_size_map_write.size()==osd_num){
           int first_flag=1;
           for(int i=0;i<osd_num;i++){ //对于8个osd
             if(osd_cons.find(i)!=osd_cons.end()){
@@ -531,6 +538,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
                   MOSDStatus *status_message = new MOSDStatus();
                   status_message->osd_disk_read_time_map = osd_disk_read_time_map;
                   status_message->osd_pending_list_size_map = osd_pending_list_size_map;
+                  status_message->osd_pending_list_size_map_write = osd_pending_list_size_map_write;
                   int send_flag = 0;
                   for(auto temp:osd_pending_list_size_map){
                     if(temp.second != 0){
@@ -554,55 +562,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
         gio_update_mutex.unlock();
       }
     
-      // if(key.first=="osd"&&key.second=="0"){
-      //   int ready_flag = 1;
-      //   dout(0)<<" mydebug: when handle report from OSD."<<key.second<<" check if ready:"<<dendl;
-      //   for(int i=0;i<osd_num;i++){
-      //     if (osd_cons.find(i) != osd_cons.end()) {
-      //       if(osd_cons.find(i)->second.size()==0){
-      //         ready_flag = 0;
-      //         dout(0)<<" mydebug: cons set is empty in OSD."<<i<<dendl;
-      //       }else{
-      //         for (auto& con : osd_cons.find(i)->second) {
-      //           dout(0)<<" mydebug: ref of osd"<<i<<": "<<con->get_peer_addr()<<dendl;
-      //         }
-      //       }
-      //     }else{
-      //       ready_flag = 0; //有的osd的地址还没建立好
-      //       dout(0)<<" mydebug: osd_cons has no OSD."<<i<<dendl;
-      //     }        
-      //   }
-      //   gio_update_mutex.lock(); //检查两个map的数据是不是已经是8个了
-      //   if(osd_disk_read_time_map.size()!=osd_num || osd_pending_list_size_map.size()!=osd_num){
-      //     dout(0)<<" mydebug: data is not ready!"<<dendl;
-      //     ready_flag = 0;
-      //     gio_update_mutex.unlock();
-      //   }  
-      //   if(ready_flag == 1){//当全部osd的地址都准备好的时候
-      //     //准备好msg,先上锁以防数据被其他report修改
-      //     dout(0)<<" mydebug: data & ref is ready!"<<dendl;
-      //     MOSDStatus *status_message = new MOSDStatus();
-      //     status_message->osd_disk_read_time_map = osd_disk_read_time_map;
-      //     status_message->osd_pending_list_size_map = osd_pending_list_size_map;
-      //     gio_update_mutex.unlock();         
-      //     for(int i=0;i<osd_num;i++){//将msg发送给所有的osd 
-      //       if (osd_cons.find(i) != osd_cons.end()) {
-      //         for (auto& con : osd_cons.find(i)->second) {
-      //           if(con->is_connected()){
-      //             dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<dendl;
-      //             con->send_message(status_message);
-      //           }else{
-      //             dout(0)<<" mydebug: is not connected "<<i<<dendl;
-      //           } 
-      //         }                  
-      //       }else{
-      //         dout(0)<<" mydebug: ref of osd"<<i<<" does not exist!"<<dendl;
-      //       }        
-      //     }
-      //   }else{
-      //     gio_update_mutex.unlock();
-      //   }
-      // }
+      
     }
 
     if (daemon->service_daemon) {

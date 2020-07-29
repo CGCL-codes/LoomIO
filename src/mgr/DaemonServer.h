@@ -49,6 +49,7 @@ public:
   std::mutex gio_update_mutex;
   map<int,int> osd_disk_read_time_map; 
   map<int,int> osd_pending_list_size_map;
+  map<int,int> osd_pending_list_size_map_write;
 
 protected:
   boost::scoped_ptr<Throttle> client_byte_throttler;

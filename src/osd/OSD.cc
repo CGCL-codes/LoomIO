@@ -3253,6 +3253,9 @@ void OSD::create_logger()
     l_osd_pending_sub_read_num, "pending_sub_read_num",
     "pending_sub_read_num");
   osd_plb.add_u64(
+    l_osd_pending_sub_write_num, "pending_sub_write_num",
+    "pending_sub_write_num");
+  osd_plb.add_u64(
     l_osd_disk_read_latency, "disk_read_latency",
     "disk_read_latency");
 
@@ -7979,12 +7982,16 @@ void OSD::handle_status(MOSDStatus *m)
   schedule_lock.lock();
   disk_latency_map = m->osd_disk_read_time_map;
   pending_list_size_map = m->osd_pending_list_size_map;
+  pending_list_size_map_write = m->osd_pending_list_size_map_write;
   dout(0) << " mydebug: after updating: " << dendl;
   for(int i=0;i<disk_latency_map.size();i++){
     dout(0) << " mydebug: disk_latency_map["<<i<<"]="<<disk_latency_map[i]<< dendl;
   }
   for(int i=0;i<pending_list_size_map.size();i++){
     dout(0) << " mydebug: pending_list_size_map["<<i<<"]="<<pending_list_size_map[i]<< dendl;
+  }
+  for(int i=0;i<pending_list_size_map_write.size();i++){
+    dout(0) << " mydebug: pending_list_size_map_write["<<i<<"]="<<pending_list_size_map_write[i]<< dendl;
   }
   schedule_lock.unlock();
   m->put();//put功能不明，先待定
@@ -10299,6 +10306,7 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
   }else if(op_type == MSG_OSD_EC_WRITE){
     pending_sub_write_num++;
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
+    logger->set(l_osd_pending_sub_write_num,pending_sub_write_num);
   }else{
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }
