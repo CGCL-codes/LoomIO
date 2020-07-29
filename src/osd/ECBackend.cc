@@ -1732,13 +1732,16 @@ int ECBackend::get_min_avail_to_read_shards(
     /**先算(write*write/total+read)*disk***/
     /*****/
     vector<float> queue_map(NUM_OSD);
+    dout(0)<<" mydebug: in gio"<<dendl;
     int queue_map_size = 0;
     osd->osd->schedule_lock.lock();
     for(auto it : osd->osd->pending_list_size_map){
       int cur_osd = it.first;
       int cur_size = it.second;
       int write_size = osd->osd->pending_list_size_map_write[cur_osd];
+      dout(0)<<" mydebug: write_size="<<write_size<<dendl;
       float factor = (write_size*write_size/(write_size+cur_size)+cur_size)*osd->osd->disk_latency_map[cur_osd];
+      dout(0)<<" mydebug: factor="<<factor<<dendl;
       queue_map[cur_osd] = 0.33*factor-0.0165;
       queue_map_size++;
     }
