@@ -1273,7 +1273,7 @@ public:
 private:
   std::mutex lock;
   queue<int> data_queue;
-}
+};
 
 class OSD : public Dispatcher,
 	    public md_config_obs_t {
