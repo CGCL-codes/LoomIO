@@ -1759,6 +1759,7 @@ int ECBackend::get_min_avail_to_read_shards(
 
     redisContext *context = osd->redis_context;
     //translate to have2
+    //test mac env
     int have2[EC_K+EC_M];
     int have2_pos=0;
     for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
