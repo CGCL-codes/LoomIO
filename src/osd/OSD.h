@@ -1866,9 +1866,9 @@ private:
     uint32_t num_shards;
 
   public:
-    std::string WQ_Name;
+    //std::string WQ_Name;
     ShardedOpWQ(
-    string wq_name;
+    string wq_name,
     uint32_t pnum_shards,
 		OSD *o,
 		time_t ti,
