@@ -42,34 +42,39 @@ class FifoQueue :  public OpQueue <T, K>
   private:
     std::queue<T> myqueue;
   public:
-    unsigned size;
+    unsigned my_size;
 
     FifoQueue(){}
 
     unsigned length() const final {
-      return size;
+      return myqueue.size();
     }
     void remove_by_class(K cl, std::list<T>* removed = 0) final {
         ////maybe to do
     }
     bool empty() const final {
-      return !(size);
+      return myqueue.empty();
     }
     void enqueue_strict(K cl, unsigned p, T item) final {
       myqueue.push(item);
+      my_size++;
     }
     void enqueue_strict_front(K cl, unsigned p, T item) final {
       myqueue.push(item);
+      my_size++;
     }
     void enqueue(K cl, unsigned p, unsigned cost, T item) final {
       myqueue.push(item);
+      my_size++;
     }
     void enqueue_front(K cl, unsigned p, unsigned cost, T item) final {
       myqueue.push(item);
+      my_size++;
     }
     T dequeue() override {
       assert(size > 0);
       T ret = myqueue.front();
+      my_size--;
       myqueue.pop();
       return ret;
     }
