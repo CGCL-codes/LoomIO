@@ -2514,6 +2514,8 @@ private:
   bool ms_handle_refused(Connection *con) override;
 
   io_queue get_io_queue() const {
+
+    return io_queue::fifo_queue;
     if (cct->_conf->osd_op_queue == "debug_random") {
       static io_queue index_lookup[] = { io_queue::prioritized,
 					 io_queue::weightedpriority,
