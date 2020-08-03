@@ -72,7 +72,7 @@ class FifoQueue :  public OpQueue <T, K>
       my_size++;
     }
     T dequeue() override {
-      assert(size > 0);
+      assert(my_size > 0);
       T ret = myqueue.front();
       my_size--;
       myqueue.pop();
