@@ -27,6 +27,7 @@
 #include "common/ceph_context.h"
 #include "common/zipkin_trace.h"
 
+
 #include "mgr/MgrClient.h"
 
 #include "os/ObjectStore.h"
@@ -61,6 +62,7 @@ using namespace std;
 #include "messages/MOSDStatus.h"
 #include "include/Spinlock.h"
 #include "common/EventTrace.h"
+#include "common/FifoQueue.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1749,6 +1751,7 @@ private:
     weightedpriority,
     mclock_opclass,
     mclock_client,
+    fifo_queue,
   };
   friend std::ostream& operator<<(std::ostream& out, const OSD::io_queue& q);
 
@@ -1845,7 +1848,11 @@ private:
 	} else if (opqueue == io_queue::mclock_client) {
 	  pqueue = std::unique_ptr
 	    <ceph::mClockClientQueue>(new ceph::mClockClientQueue(cct));
-	}
+	} else if (opqueue == io_queue::fifo_queue){ //my fifo queue
+    pqueue = std::unique_ptr
+	    <FifoQueue<pair<spg_t,PGQueueable>,entity_inst_t>>(
+	      new FifoQueue<pair<spg_t,PGQueueable>,entity_inst_t>());
+  }
       }
     }; // struct ShardData
 
