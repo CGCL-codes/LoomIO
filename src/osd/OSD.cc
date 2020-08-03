@@ -10294,25 +10294,25 @@ void OSD::enqueue_op(spg_t pg, OpRequestRef& op, epoch_t epoch)
   logger->tinc(l_osd_op_before_queue_op_lat, latency);
   int op_type = op->get_req()->get_type();
   if(op_type == CEPH_MSG_OSD_OP){
-    dout(0) << "mydebug: queue osd op" << dendl;
+    //dout(0) << "mydebug: queue osd op" << dendl;
     op_obj_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }else if(op_type == MSG_OSD_EC_READ_REPLY){
-    dout(0) << "mydebug: queue ec_read_reply" << dendl;
+    //dout(0) << "mydebug: queue ec_read_reply" << dendl;
     op_reply_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }else if(op_type == MSG_OSD_EC_READ){
-    dout(0) << "mydebug: queue ec_read" << dendl;
+    //dout(0) << "mydebug: queue ec_read" << dendl;
     pending_sub_read_num++;
     op->read_queue_size = pending_sub_read_num;
     op->write_queue_size = pending_sub_write_num;
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
     logger->set(l_osd_pending_sub_read_num,pending_sub_read_num);
   }else if(op_type == MSG_OSD_EC_WRITE){
-    dout(0) << "mydebug: queue ec_write" << dendl;
+    //dout(0) << "mydebug: queue ec_write" << dendl;
     pending_sub_write_num++;
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
     logger->set(l_osd_pending_sub_write_num,pending_sub_write_num);
   }else{
-    dout(0) << "mydebug: queue other" << dendl;
+    //dout(0) << "mydebug: queue other" << dendl;
     op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
   }
   //op_shardedwq.queue(make_pair(pg, PGQueueable(op, epoch)));
@@ -11026,7 +11026,7 @@ void OSD::ShardedOpWQ::_process(uint32_t thread_index, heartbeat_handle_d *hb)
   sdata->sdata_op_ordering_lock.Lock();
 
   if (sdata->pqueue->empty()) {
-    dout(0) << __func__ << "mydebug: empty queue" << dendl;
+    //dout(0) << __func__ << "mydebug: empty queue" << dendl;
     dout(20) << __func__ << " empty q, waiting" << dendl;
     // optimistically sleep a moment; maybe another work item will come along.
     osd->cct->get_heartbeat_map()->reset_timeout(hb,
@@ -11043,7 +11043,7 @@ void OSD::ShardedOpWQ::_process(uint32_t thread_index, heartbeat_handle_d *hb)
     }
   }
   pair<spg_t, PGQueueable> item = sdata->pqueue->dequeue();
-  dout(0) << __func__ << "mydebug: dequeue" << dendl;
+  //dout(0) << __func__ << "mydebug: dequeue" << dendl;
 
   if (osd->is_stopping()) {
     sdata->sdata_op_ordering_lock.Unlock();
