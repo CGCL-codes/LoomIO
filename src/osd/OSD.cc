@@ -2796,7 +2796,7 @@ int OSD::init()
   load_pgs();
 
   dout(2) << "superblock: I am osd." << superblock.whoami << dendl;
-  dout(0) << "using " << op_queue << " op queue with priority op cut off at " <<
+  dout(0) << "mydebug: op_queue " << op_queue << " op queue with priority op cut off at " <<
     op_prio_cutoff << "." << dendl;
 
   create_logger();
