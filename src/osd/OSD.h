@@ -1825,7 +1825,7 @@ private:
 	    priority, cost, item);
       }
 
-      ShardData(
+      ShardData(string wq_name,
 	string lock_name, string ordering_lock,
 	uint64_t max_tok_per_prio, uint64_t min_cost, CephContext *cct,
 	io_queue opqueue)
@@ -1848,10 +1848,15 @@ private:
 	} else if (opqueue == io_queue::mclock_client) {
 	  pqueue = std::unique_ptr
 	    <ceph::mClockClientQueue>(new ceph::mClockClientQueue(cct));
-	} else if (opqueue == io_queue::fifo_queue){ //my fifo queue
+	} else if (opqueue == io_queue::fifo_queue && wq_name=="sub_op"){ //my fifo queue
     pqueue = std::unique_ptr
 	    <FifoQueue<pair<spg_t,PGQueueable>,entity_inst_t>>(
 	      new FifoQueue<pair<spg_t,PGQueueable>,entity_inst_t>());
+  }else{
+    pqueue = std::unique_ptr
+	    <WeightedPriorityQueue<pair<spg_t,PGQueueable>,entity_inst_t>>(
+	      new WeightedPriorityQueue<pair<spg_t,PGQueueable>,entity_inst_t>(
+		max_tok_per_prio, min_cost));
   }
       }
     }; // struct ShardData
@@ -1861,7 +1866,10 @@ private:
     uint32_t num_shards;
 
   public:
-    ShardedOpWQ(uint32_t pnum_shards,
+    std::string WQ_Name;
+    ShardedOpWQ(
+    string wq_name;
+    uint32_t pnum_shards,
 		OSD *o,
 		time_t ti,
 		time_t si,
@@ -1876,6 +1884,7 @@ private:
 	snprintf(order_lock, sizeof(order_lock), "%s.%d",
 		 "OSD:ShardedOpWQ:order:", i);
 	ShardData* one_shard = new ShardData(
+    wq_name,
 	  lock_name, order_lock,
 	  osd->cct->_conf->osd_op_pq_max_tokens_per_priority, 
 	  osd->cct->_conf->osd_op_pq_min_cost, osd->cct, osd->op_queue);
