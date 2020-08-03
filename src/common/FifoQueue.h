@@ -71,7 +71,7 @@ class FifoQueue :  public OpQueue <T, K>
       assert(size > 0);
       T ret = myqueue.front();
       myqueue.pop();
-      return T;
+      return ret;
     }
     void dump(ceph::Formatter *f) const override {
         //maybe to do
