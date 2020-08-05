@@ -722,6 +722,7 @@ OPTION(osd_gio, OPT_INT)
 OPTION(osd_gio_show_interval, OPT_INT)
 OPTION(osd_gio_wait_interval, OPT_INT)
 OPTION(osd_gio_coordination_granularity, OPT_INT)
+OPTION(osd_gio_estimation, OPT_INT)
 
 OPTION(osd_backfill_scan_min, OPT_INT)
 OPTION(osd_backfill_scan_max, OPT_INT)

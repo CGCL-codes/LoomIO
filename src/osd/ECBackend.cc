@@ -1737,16 +1737,29 @@ int ECBackend::get_min_avail_to_read_shards(
     dout(0)<<" mydebug: in gio"<<dendl;
     int queue_map_size = 0;
     osd->osd->schedule_lock.lock();
-    for(auto it : osd->osd->pending_list_size_map){
-      int cur_osd = it.first;
-      int cur_size = it.second;
-      int write_size = osd->osd->pending_list_size_map_write[cur_osd];
-      //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
-      float factor = ((float)((write_size*write_size/(write_size+cur_size+1)+cur_size)*osd->osd->disk_latency_map[cur_osd]))/1000000000;
-      //dout(0)<<" mydebug: factor="<<factor<<dendl;
-      //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
-      queue_map[cur_osd] = 0.3*factor+((float)(osd->osd->disk_latency_map[cur_osd]))/1000000000;
-      queue_map_size++;
+    if(osd->cct->_conf->osd_gio_estimation==1){
+      for(auto it : osd->osd->pending_list_size_map){
+        int cur_osd = it.first;
+        int cur_size = it.second;
+        int write_size = osd->osd->pending_list_size_map_write[cur_osd];
+        //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
+        float factor = ((float)((write_size*write_size/(write_size+cur_size+1)+cur_size)*osd->osd->disk_latency_map[cur_osd]))/1000000000;
+        //dout(0)<<" mydebug: factor="<<factor<<dendl;
+        //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
+        queue_map[cur_osd] = 0.3*factor+((float)(osd->osd->disk_latency_map[cur_osd]))/1000000000;
+        queue_map_size++;
+      }
+    }else{
+      for(auto it : osd->osd->pending_list_size_map){
+        int cur_osd = it.first;
+        int cur_size = it.second;
+        //int write_size = osd->osd->pending_list_size_map_write[cur_osd];
+        //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
+        //dout(0)<<" mydebug: factor="<<factor<<dendl;
+        //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
+        queue_map[cur_osd] = osd->osd->pending_list_size_map[cur_osd];
+        queue_map_size++;
+      }
     }
     osd->osd->schedule_lock.unlock();
     if(queue_map_size<NUM_OSD){
@@ -1803,11 +1816,12 @@ int ECBackend::get_min_avail_to_read_shards(
       utime_t time_out_interval;
 			time_out_interval.tv.tv_sec = 0;
       //delay_interval.tv.tv_nsec = 40000000;
-			time_out_interval.tv.tv_nsec = osd->gio_show_interval;
+			//time_out_interval.tv.tv_nsec = osd->gio_show_interval;
+      time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_show_interval;
 			utime_t start_time = ceph_clock_now(); 
       while(1){ //如果存在就等待拿的是不是差不多了
         reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
-        if(stoi(string(reply->str)) >= (osd->gio_coordination_granularity-1)){
+        if(stoi(string(reply->str)) >= (osd->cct->_conf->osd_gio_coordination_granularity-1)){
           //当全部取完时，可以退出
           //cout<<info_key<<" has been consumed, start next!"<<endl;
           dout(0)<<info_key<<" has been enoughly consumed, start next!"<<dendl;
@@ -1845,7 +1859,7 @@ int ECBackend::get_min_avail_to_read_shards(
     utime_t time_out_interval;
 		time_out_interval.tv.tv_sec = 0;
     //delay_interval.tv.tv_nsec = 40000000;
-		time_out_interval.tv.tv_nsec = osd->gio_wait_interval;
+		time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_wait_interval;
 		utime_t start_time = ceph_clock_now();
     //cout<<"start_time="<<start_time<<endl;
     while(1){
@@ -1907,7 +1921,7 @@ int ECBackend::get_min_avail_to_read_shards(
         have_got[i]=1;
       }
     end:            
-      if(num_got>=(osd->gio_coordination_granularity-1)){//首先保证至少获得这么多 
+      if(num_got>=(osd->cct->_conf->osd_gio_coordination_granularity-1)){//首先保证至少获得这么多 
         dout(0)<<"have got all!"<<dendl;
         break;
         //如果全部拿到了，就退出                   

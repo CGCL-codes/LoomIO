@@ -386,6 +386,7 @@ public:
   int gio_show_interval;
   int gio_wait_interval;
   int gio_coordination_granularity;
+  int gio_estimation;
 
 
   OSD *osd;
