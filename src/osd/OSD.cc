@@ -2000,7 +2000,7 @@ OSD::OSD(CephContext *cct_, ObjectStore *store_,
 	     cct->_conf->osd_peering_wq_threads,
 	     "osd_peering_tp_threads"),
   osd_op_tp(cct, "OSD::osd_op_tp", "tp_osd_tp",
-	    5),//get_num_op_threads()
+	    get_num_op_threads()),//5
   osd_op_obj_tp(cct, "OSD::osd_op_obj_tp", "tp_osd_obj_tp",
 	    1),
   osd_op_reply_tp(cct, "OSD::osd_op_reply_tp", "tp_osd_reply_tp",
@@ -2027,7 +2027,7 @@ OSD::OSD(CephContext *cct_, ObjectStore *store_,
   op_prio_cutoff(get_io_prio_cut()),
   op_shardedwq(
     "sub_op",
-    1,//get_num_op_shards(),
+    get_num_op_shards(),//1,
     this,
     cct->_conf->osd_op_thread_timeout,
     cct->_conf->osd_op_thread_suicide_timeout,
