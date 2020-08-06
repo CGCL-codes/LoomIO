@@ -1746,7 +1746,7 @@ int ECBackend::get_min_avail_to_read_shards(
         float factor = ((float)((write_size*write_size/(write_size+cur_size+1)+cur_size)*osd->osd->disk_latency_map[cur_osd]))/1000000000;
         //dout(0)<<" mydebug: factor="<<factor<<dendl;
         //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
-        queue_map[cur_osd] = 0.3*factor+((float)(osd->osd->disk_latency_map[cur_osd]))/1000000000;
+        queue_map[cur_osd] = osd->cct->_conf->osd_gio_estimation_factor*factor+((float)(osd->osd->disk_latency_map[cur_osd]))/1000000000;
         queue_map_size++;
       }
     }else{
