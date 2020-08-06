@@ -2404,6 +2404,10 @@ std::vector<Option> get_global_options() {
     .set_default(0.3)
     .set_description(""),
 
+    Option("osd_gio_estimation_disk", Option::TYPE_INT, Option::LEVEL_ADVANCED)
+    .set_default(0)
+    .set_description("0:use average,1:use this value"),
+
     Option("osd_gio", Option::TYPE_INT, Option::LEVEL_ADVANCED)
     .set_default(0)
     .set_description(""),
