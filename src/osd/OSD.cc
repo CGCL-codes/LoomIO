@@ -296,7 +296,7 @@ OSDService::OSDService(OSD *osd) :
   for(int i=0;i<NUM_OSD;i++){
         queue_map.push_back(0);
   }
-  for(int i=0;i<NUM_SCHEDULER;i++){
+  for(int i=0;i<NUM_OSD;i++){
         last_time.push_back(string("0"));
   }
 }
