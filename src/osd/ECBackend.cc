@@ -1858,7 +1858,7 @@ int ECBackend::get_min_avail_to_read_shards(
     int num_got = 0;
     //循环遍历其他osd
     int i=0;//i为当前遍历的osd编号在当前region的偏移
-    vector<int> have_got[osd->cct->_conf->osd_gio_coordination_granularity];
+    vector<int> have_got(osd->cct->_conf->osd_gio_coordination_granularity,0);
     for(int j=0;j<osd->cct->_conf->osd_gio_coordination_granularity;j++){
       have_got[j]=0;
     }
