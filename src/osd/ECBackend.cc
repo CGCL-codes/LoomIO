@@ -1843,7 +1843,7 @@ int ECBackend::get_min_avail_to_read_shards(
         utime_t cur_time = ceph_clock_now();
         if((cur_time-start_time)>time_out_interval){
           //cout<<info_key<<" time_out, start next!"<<endl;
-          dout(0)<<info_key<<" time_out, start next!, have got "<<stoi(string(reply->str))<<dendl;
+          dout(0)<<info_key<<" time_out, start next!, consumed by "<<stoi(string(reply->str))<<dendl;
           break;
         }
       }
@@ -1880,12 +1880,13 @@ int ECBackend::get_min_avail_to_read_shards(
 
     while(1){
       if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity) || have_got[i]){//跳过自己id的偏移以及已经获得的id
+        cout<<"skip "<<i<<"!"<<endl;
         i++;
         i%=osd->cct->_conf->osd_gio_coordination_granularity;
         continue;
       }
       int actual_id=i+region_id*osd->cct->_conf->osd_gio_coordination_granularity;
-      //cout<<"check "<<i<<"..."<<endl;
+      cout<<"check "<<actual_id<<"..."<<endl;
       string target_key = string("info")+to_string(actual_id);
       string target_num = string("num")+to_string(actual_id);
       string target_time = string("time")+to_string(actual_id);
@@ -1894,7 +1895,7 @@ int ECBackend::get_min_avail_to_read_shards(
       reply = (redisReply *)redisCommand(context, "exists %s", target_time.c_str());
       reply2 = (redisReply *)redisCommand(context, "exists %s", target_sec.c_str());
       if(reply->integer == 0 || reply2->integer ==0){//如果target_time不存在就跳到后面判断是否结束
-        //cout<<target_time<<" no exists!"<<endl;
+        cout<<target_time<<" no exists!"<<endl;
         goto end;
       }else{
         //cout<<target_time<<" exists!"<<endl;
@@ -1907,7 +1908,7 @@ int ECBackend::get_min_avail_to_read_shards(
         reply = (redisReply *)redisCommand(context, "get %s", target_sec.c_str());      
         string sec_time = reply->str;
         if((start_time-stoi(sec_time))>3){//如果时间戳太旧了，就下一个
-          //cout<<target_key<<" is too old"<<endl;
+          cout<<target_key<<" is too old"<<endl;
           goto end;
         }
         //如果obj信息合适
@@ -1946,11 +1947,11 @@ int ECBackend::get_min_avail_to_read_shards(
       }
       utime_t cur_time = ceph_clock_now();
       if((cur_time-start_time)>time_out_interval){//如果实在等不到了，也推出
-        dout(0)<<"dont wait anymore!!"<<dendl;
+        dout(0)<<"dont wait anymore, have got "<<num_got<<dendl;
         break;
       }
       i++;
-      i%=NUM_SCHEDULER;
+      i%=osd->cct->_conf->osd_gio_coordination_granularity;
     }
     //已经获得到了schedule map，进行调度
     osd->osd->schedule_lock.lock();
