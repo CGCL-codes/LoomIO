@@ -1843,7 +1843,7 @@ int ECBackend::get_min_avail_to_read_shards(
         utime_t cur_time = ceph_clock_now();
         if((cur_time-start_time)>time_out_interval){
           //cout<<info_key<<" time_out, start next!"<<endl;
-          dout(0)<<info_key<<" time_out, start next!"<<dendl;
+          dout(0)<<info_key<<" time_out, start next!, have got "<<stoi(string(reply->str))<<dendl;
           break;
         }
       }
@@ -1946,7 +1946,7 @@ int ECBackend::get_min_avail_to_read_shards(
       }
       utime_t cur_time = ceph_clock_now();
       if((cur_time-start_time)>time_out_interval){//如果实在等不到了，也推出
-        dout(0)<<"dont wait anymore"<<dendl;
+        dout(0)<<"dont wait anymore!!"<<dendl;
         break;
       }
       i++;
