@@ -1886,7 +1886,7 @@ int ECBackend::get_min_avail_to_read_shards(
         continue;
       }
       int actual_id=i+region_id*osd->cct->_conf->osd_gio_coordination_granularity;
-      cout<<"check "<<actual_id<<"..."<<endl;
+      dout(0)<<"check "<<actual_id<<"..."<<dendl;
       string target_key = string("info")+to_string(actual_id);
       string target_num = string("num")+to_string(actual_id);
       string target_time = string("time")+to_string(actual_id);
