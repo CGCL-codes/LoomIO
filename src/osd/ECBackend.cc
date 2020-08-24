@@ -1862,6 +1862,7 @@ int ECBackend::get_min_avail_to_read_shards(
     for(int j=0;j<osd->cct->_conf->osd_gio_coordination_granularity;j++){
       have_got[j]=0;
     }
+    ////hahahaha
     utime_t time_out_interval;
 		time_out_interval.tv.tv_sec = 0;
     //delay_interval.tv.tv_nsec = 40000000;
