@@ -1908,6 +1908,7 @@ int ECBackend::get_min_avail_to_read_shards(
         reply = (redisReply *)redisCommand(context, "get %s", target_sec.c_str());      
         string sec_time = reply->str;
         if((start_time-stoi(sec_time))>3){//如果时间戳太旧了，就下一个
+          dout(0)<<start_time<<" "<<stoi(sec_time)<<" "<<start_time-stoi(sec_time)<<dendl;
           dout(0)<<target_key<<" is too old"<<dendl;
           goto end;
         }
