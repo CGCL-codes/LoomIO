@@ -1824,15 +1824,22 @@ int ECBackend::get_min_avail_to_read_shards(
       //delay_interval.tv.tv_nsec = 40000000;
 			//time_out_interval.tv.tv_nsec = osd->gio_show_interval;
       time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_show_interval;
-			utime_t start_time = ceph_clock_now(); 
+			utime_t start_time = ceph_clock_now();
+      int first_check=1; 
       while(1){ //如果存在就等待拿的是不是差不多了
         reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
         if(stoi(string(reply->str)) >= (osd->cct->_conf->osd_gio_coordination_granularity-1)){
           //当全部取完时，可以退出
           //cout<<info_key<<" has been consumed, start next!"<<endl;
-          dout(0)<<info_key<<" has been enoughly consumed: "<<osd->cct->_conf->osd_gio_coordination_granularity-1<<dendl;
+          if(first_check){
+            dout(0)<<"consumed first_check"<<dendl;
+          }else{
+            dout(0)<<"consumed other_check"<<dendl;
+            dout(0)<<info_key<<" pub wait for  "<<ceph_clock_now()-start_time<<dendl;
+          }
           break;
-        }       
+        }
+        first_check=0;       
         utime_t cur_time = ceph_clock_now();
         if((cur_time-start_time)>time_out_interval){
           //cout<<info_key<<" time_out, start next!"<<endl;
@@ -1933,6 +1940,7 @@ int ECBackend::get_min_avail_to_read_shards(
     end:            
       if(num_got>=(osd->cct->_conf->osd_gio_coordination_granularity-1)){//首先保证至少获得这么多 
         dout(0)<<"have got all: "<<osd->cct->_conf->osd_gio_coordination_granularity-1<<dendl;
+        dout(0)<<"gather wait for"<<ceph_clock_now()-start_time<<dendl;
         break;
         //如果全部拿到了，就退出                   
       }
