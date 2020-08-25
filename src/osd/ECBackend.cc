@@ -1806,15 +1806,16 @@ int ECBackend::get_min_avail_to_read_shards(
     if(reply->integer == 0){//如果不存在就创建info_key和num_key
       //cout<<info_key<<" no exist!" <<endl;
       dout(0)<<" mydebug: info no exist!"<<dendl;
-      struct timeval tv;
-      struct timezone tz;
-      gettimeofday (&tv , &tz);
+      // struct timeval tv;
+      // struct timezone tz;
+      // gettimeofday (&tv , &tz);
+      utime_t pub_time = ceph_clock_now();
       //cout<<tv.tv_usec<<endl;
       reply = (redisReply *)redisCommand(context, "set %s %s", info_key.c_str(),info_str.c_str());
       //reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
       reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
-      reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),tv.tv_usec);
-      reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),tv.tv_sec);
+      reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),pub_time.usec());
+      reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),pub_time.sec());
       //reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
       //cout<<"num0="<<stoi(string(reply->str))<<endl;
     }else{
@@ -1848,15 +1849,16 @@ int ECBackend::get_min_avail_to_read_shards(
         }
       }
             
-      struct timeval tv;
-      struct timezone tz;
-      gettimeofday (&tv , &tz);
+      // struct timeval tv;
+      // struct timezone tz;
+      // gettimeofday (&tv , &tz);
+      utime_t pub_time = ceph_clock_now();
       //cout<<"new time_stamp"<<tv.tv_sec<<"."<<tv.tv_usec<<endl;
       reply = (redisReply *)redisCommand(context, "set %s %s", info_key.c_str(),info_str.c_str());
       //reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
       reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
-      reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),tv.tv_usec);
-      reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),tv.tv_sec);
+      reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),pub_time.usec());
+      reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),pub_time.sec());
       //reply = (redisReply *)redisCommand(context, "get %s", num_key.c_str());
       //cout<<"num0="<<stoi(string(reply->str))<<endl;
     }
@@ -1907,8 +1909,8 @@ int ECBackend::get_min_avail_to_read_shards(
         }
         reply = (redisReply *)redisCommand(context, "get %s", target_sec.c_str());      
         string sec_time = reply->str;
-        if((start_time.tv.tv_sec-stoi(sec_time))>3){//如果时间戳太旧了，就下一个
-          dout(0)<<start_time.tv.tv_sec<<" "<<stoi(sec_time)<<" "<<start_time-stoi(sec_time)<<dendl;
+        if((start_time.sec()-stoi(sec_time))>3){//如果时间戳太旧了，就下一个
+          dout(0)<<start_time.sec()<<" "<<stoi(sec_time)<<" "<<start_time.sec()-stoi(sec_time)<<dendl;
           dout(0)<<target_key<<" is too old"<<dendl;
           goto end;
         }
