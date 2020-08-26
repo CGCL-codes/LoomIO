@@ -1862,7 +1862,7 @@ int ECBackend::get_min_avail_to_read_shards(
       reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
       reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),pub_time.usec());
       reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),pub_time.sec());
-      dout(0)<<"#set_latency,"<<(ceph_clock_now()-start_set)/4<<"#"<<dendl;
+      dout(0)<<"redis_info#set_latency,"<<(ceph_clock_now()-start_set)/4*1000000<<"#"<<dendl;
       dout(0)<<"set sec_key ="<<pub_time.sec()<<dendl;
       dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
       reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
@@ -1903,7 +1903,7 @@ int ECBackend::get_min_avail_to_read_shards(
       utime_t start_exist = ceph_clock_now();
       reply = (redisReply *)redisCommand(context, "exists %s", target_time.c_str());
       reply2 = (redisReply *)redisCommand(context, "exists %s", target_sec.c_str());
-      dout(0)<<"#exist_latency,"<<(ceph_clock_now()-start_exist)/2<<"#"<<dendl;
+      dout(0)<<"redis_info#exist_latency,"<<(ceph_clock_now()-start_exist)/2*1000000<<"#"<<dendl;
       if(reply->integer == 0 || reply2->integer ==0){//如果target_time不存在就跳到后面判断是否结束
         dout(0)<<target_time<<" no exists!"<<dendl;
         goto end;
@@ -1928,7 +1928,7 @@ int ECBackend::get_min_avail_to_read_shards(
         osd->last_time[actual_id] = temp_time;
         utime_t start_get = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "get %s", target_key.c_str());
-        dout(0)<<"#get_latency,"<<(ceph_clock_now()-start_get)<<dendl;
+        dout(0)<<"redis_info#get_latency,"<<(ceph_clock_now()-start_get)*1000000<<"#"<<dendl;
         //cout<<reply->type<<endl;
         int temp_have[EC_K+EC_M];
         if(reply->str==NULL){
@@ -1940,7 +1940,7 @@ int ECBackend::get_min_avail_to_read_shards(
         //reply = (redisReply *)redisCommand(context, "decr %s", target_num.c_str());
         utime_t start_incr = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "incr %s", target_num.c_str());
-        dout(0)<<"#incr_latency,"<<(ceph_clock_now()-start_incr)<<"#"<<dendl;
+        dout(0)<<"redis_info#incr_latency,"<<(ceph_clock_now()-start_incr)*1000000<<"#"<<dendl;
         strtohave(temp_str,temp_have);//读出的信息存放在temp_have中，
         // for(int i=0;i<(EC_K+EC_M);i++){
         //     cout<<"strtohave:"<<temp_have[i]<<endl;
