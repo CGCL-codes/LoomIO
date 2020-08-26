@@ -1856,11 +1856,13 @@ int ECBackend::get_min_avail_to_read_shards(
       // gettimeofday (&tv , &tz);
       utime_t pub_time = ceph_clock_now();
       //cout<<"new time_stamp"<<tv.tv_sec<<"."<<tv.tv_usec<<endl;
+      utime_t start_set = ceph_clock_now();
       reply = (redisReply *)redisCommand(context, "set %s %s", info_key.c_str(),info_str.c_str());
       //reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),NUM_SCHEDULER-1);
       reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
       reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),pub_time.usec());
       reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),pub_time.sec());
+      dout(0)<<"#set_latency,"<<(ceph_clock_now()-start_set)/4<<"#"<<dendl;
       dout(0)<<"set sec_key ="<<pub_time.sec()<<dendl;
       dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
       reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
@@ -1898,8 +1900,10 @@ int ECBackend::get_min_avail_to_read_shards(
       string target_time = string("time")+to_string(actual_id);
       string target_sec = string("sec")+to_string(actual_id);
       //cout<<"target_key="<<target_key<<endl;
+      utime_t start_exist = ceph_clock_now();
       reply = (redisReply *)redisCommand(context, "exists %s", target_time.c_str());
       reply2 = (redisReply *)redisCommand(context, "exists %s", target_sec.c_str());
+      dout(0)<<"#exist_latency,"<<(ceph_clock_now()-start_exist)/2<<"#"<<dendl;
       if(reply->integer == 0 || reply2->integer ==0){//如果target_time不存在就跳到后面判断是否结束
         dout(0)<<target_time<<" no exists!"<<dendl;
         goto end;
@@ -1922,7 +1926,9 @@ int ECBackend::get_min_avail_to_read_shards(
         //cout<<"get proper "<<target_key<<endl;
         dout(0)<<"get proper "<<target_key<<dendl;
         osd->last_time[actual_id] = temp_time;
+        utime_t start_get = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "get %s", target_key.c_str());
+        dout(0)<<"#get_latency,"<<(ceph_clock_now()-start_get)<<dendl;
         //cout<<reply->type<<endl;
         int temp_have[EC_K+EC_M];
         if(reply->str==NULL){
@@ -1932,7 +1938,9 @@ int ECBackend::get_min_avail_to_read_shards(
 
         //将目标obj的引用次数加一
         //reply = (redisReply *)redisCommand(context, "decr %s", target_num.c_str());
+        utime_t start_incr = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "incr %s", target_num.c_str());
+        dout(0)<<"#incr_latency,"<<(ceph_clock_now()-start_incr)<<"#"<<dendl;
         strtohave(temp_str,temp_have);//读出的信息存放在temp_have中，
         // for(int i=0;i<(EC_K+EC_M);i++){
         //     cout<<"strtohave:"<<temp_have[i]<<endl;
