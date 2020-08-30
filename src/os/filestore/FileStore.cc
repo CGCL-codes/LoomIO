@@ -2698,8 +2698,10 @@ void FileStore::_do_transaction(
         bufferlist bl;
         i.decode_bl(bl);
         tracepoint(objectstore, write_enter, osr_name, off, len);
+        utime_t start_write = ceph_clock_now();
         if (_check_replay_guard(cid, oid, spos) > 0)
           r = _write(cid, oid, off, len, bl, fadvise_flags);
+        dout(0)<<"mydebug:write_latency="<<ceph_clock_now()-start_write<<dendl;
         tracepoint(objectstore, write_exit, r);
       }
       break;
