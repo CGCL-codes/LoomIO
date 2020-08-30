@@ -1767,6 +1767,12 @@ int ECBackend::get_min_avail_to_read_shards(
         queue_map_size++;
       }
     }
+    //根据pendinglist的情况决定time_interval的大小，
+    utime_t time_out_interval;
+		time_out_interval.tv.tv_sec = 0;
+    time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_show_interval;
+    
+
     osd->osd->schedule_lock.unlock();
     if(queue_map_size<NUM_OSD){
       dout(0)<<" mydebug: did not get complete queue_map"<<dendl;
@@ -1822,11 +1828,6 @@ int ECBackend::get_min_avail_to_read_shards(
       dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
     }else{
       dout(0)<<" mydebug: info exist!"<<dendl;
-      utime_t time_out_interval;
-			time_out_interval.tv.tv_sec = 0;
-      //delay_interval.tv.tv_nsec = 40000000;
-			//time_out_interval.tv.tv_nsec = osd->gio_show_interval;
-      time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_show_interval;
 			utime_t start_time = ceph_clock_now();
       int first_check=1; 
       while(1){ //如果存在就等待拿的是不是差不多了
@@ -1878,10 +1879,6 @@ int ECBackend::get_min_avail_to_read_shards(
       have_got[j]=0;
     }
     ////hahahaha
-    utime_t time_out_interval;
-		time_out_interval.tv.tv_sec = 0;
-    //delay_interval.tv.tv_nsec = 40000000;
-		time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_wait_interval;
 		utime_t start_time = ceph_clock_now();
     //cout<<"start_time="<<start_time<<endl;
     int region_id = my_id / osd->cct->_conf->osd_gio_coordination_granularity;
