@@ -9727,9 +9727,9 @@ void BlueStore::_txc_add_transaction(TransContext *txc, Transaction *t)
 	uint32_t fadvise_flags = i.get_fadvise_flags();
         bufferlist bl;
         i.decode_bl(bl);
-        utime_t start_write = ceph_clock_now();
+        //utime_t start_write = ceph_clock_now();
 	r = _write(txc, c, o, off, len, bl, fadvise_flags);
-      dout(0)<<"mydebug:write_latency="<<ceph_clock_now()-start_write<<dendl;
+      //dout(0)<<"mydebug:write_latency="<<ceph_clock_now()-start_write<<dendl;
       }
       break;
 
