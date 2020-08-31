@@ -1693,8 +1693,10 @@ int ECBackend::get_min_avail_to_read_shards(
   //   have.erase(load_of_shard[1].first);
   // }
   /****k-optimal***/
+  vector<float> queue_map(NUM_OSD);
+
   if(osd->k_optimal){
-    vector<int> queue_map(NUM_OSD);
+    //vector<int> queue_map(NUM_OSD);
     int queue_map_size = 0;
     osd->osd->schedule_lock.lock();
     for(auto it : osd->osd->pending_list_size_map){
@@ -1733,7 +1735,7 @@ int ECBackend::get_min_avail_to_read_shards(
     //使用disk_latency_map以及pending_list_size_map来计算出新的queuemap
     /**先算(write*write/total+read)*disk***/
     /*****/
-    vector<float> queue_map(NUM_OSD);
+    //vector<float> queue_map(NUM_OSD);
     dout(0)<<" mydebug: in gio"<<dendl;
     int queue_map_size = 0;
     osd->osd->schedule_lock.lock();
