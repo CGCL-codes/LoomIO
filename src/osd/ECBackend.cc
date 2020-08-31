@@ -2022,11 +2022,11 @@ int ECBackend::get_min_avail_to_read_shards(
             }
           }
           have.erase(k);
-          dout(0)<<"have.erase "<<k<<dendl;
+          //dout(0)<<"have.erase "<<k<<dendl;
         }
       }
     }
-    dout(0)<<" mydebug:after_schedule:"<<queue_map<<dendl;
+    //dout(0)<<" mydebug:after_schedule:"<<queue_map<<dendl;
     osd->osd->schedule_lock.unlock();
 
   }else{
@@ -2050,8 +2050,8 @@ int ECBackend::get_min_avail_to_read_shards(
   if (!to_read)
     return 0;
 
-  dout(0) << ": mydebug: schedule_info#need,"<<need<<"#"<< dendl;
-  dout(0) << ": mydebug: schedule_info#do_redundant_reads,"<<do_redundant_reads<<"#"<< dendl;
+  //dout(0) << ": mydebug: schedule_info#need,"<<need<<"#"<< dendl;
+  //dout(0) << ": mydebug: schedule_info#do_redundant_reads,"<<do_redundant_reads<<"#"<< dendl;
 
   for (set<int>::iterator i = need.begin();
        i != need.end();
@@ -2062,9 +2062,10 @@ int ECBackend::get_min_avail_to_read_shards(
   
   for(set<pg_shard_t>::iterator i = to_read->begin();i!=to_read->end();i++){
     after_str+=to_string(i->osd);
+    dout(0)<<":sub_info#estimated,"<< hoid.oid.name<<","<<i->osd<<","<<queue_map[i->osd]<<"#"<<dendl;
   }
 
-  dout(0) << ": mydebug: schedule_info#after,"<< hoid.oid.name << "," <<after_str<<","<<ceph_clock_now()<<"#"<< dendl;
+  //dout(0) << ": mydebug: schedule_info#after,"<< hoid.oid.name << "," <<after_str<<","<<ceph_clock_now()<<"#"<< dendl;
 
   return 0;
 }
