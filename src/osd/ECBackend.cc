@@ -1772,7 +1772,7 @@ int ECBackend::get_min_avail_to_read_shards(
     //根据pendinglist的情况决定time_interval的大小，
     utime_t time_out_interval;
 		time_out_interval.tv.tv_sec = 0;
-    time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_show_interval;
+    time_out_interval.tv.tv_nsec = osd->cct->_conf->osd_gio_wait_interval;
     
 
     osd->osd->schedule_lock.unlock();
