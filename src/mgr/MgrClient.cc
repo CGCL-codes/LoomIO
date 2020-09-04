@@ -271,8 +271,8 @@ void MgrClient::_send_report()
       auto& path = i.first;
       auto& data = *(i.second.data);
       auto& perf_counters = *(i.second.perf_counters);
-      ldout(cct,0) << " mydebug:path:" << path<<",,data:"<<data<< dendl;
-
+      //ldout(cct,0) << " mydebug:path:" << path<<",,data:"<<data<< dendl;
+      ldout(cct,20) << " declare " << path << dendl;
       // Find counters that still exist, but are no longer permitted by
       // stats_threshold
       if (!include_counter(data, perf_counters)) {
