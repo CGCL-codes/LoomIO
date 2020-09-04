@@ -1702,7 +1702,7 @@ int ECBackend::get_min_avail_to_read_shards(
     for(auto it : osd->osd->pending_list_size_map){
       int cur_osd = it.first;
       int cur_size = it.second;
-      queue_map[cur_osd] = cur_size + queue_map_size;
+      queue_map[cur_osd] = cur_size;
       queue_map_size++;
     }
     osd->osd->schedule_lock.unlock();
