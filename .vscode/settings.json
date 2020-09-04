@@ -31,6 +31,13 @@
         "set": "cpp",
         "vector": "cpp",
         "filesystem": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "__bit_reference": "cpp",
+        "__string": "cpp",
+        "algorithm": "cpp",
+        "__split_buffer": "cpp",
+        "forward_list": "cpp",
+        "initializer_list": "cpp",
+        "valarray": "cpp"
     }
 }

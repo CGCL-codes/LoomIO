@@ -511,9 +511,9 @@ bool DaemonServer::handle_report(MMgrReport *m)
       auto instances_2 = daemon_counters.instances.find("osd.pending_sub_read_num");
       if(instances_2!=daemon_counters.instances.end()){
         osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
-        //dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
+        dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
       }else{
-        //dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
+        dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
       }
       auto instances_3 = daemon_counters.instances.find("osd.pending_sub_write_num");
       if(instances_3!=daemon_counters.instances.end()){
@@ -526,15 +526,17 @@ bool DaemonServer::handle_report(MMgrReport *m)
       //如果report是从0号发来的时候publish状态
         int osd_num = 8;
       if(key.first=="osd"&&key.second=="0"){
+        dout(0)<<" mydebug: in OSD0 "<<dendl;
         //先判断map里面有没有八个
         gio_update_mutex.lock();
         if(osd_disk_read_time_map.size()==osd_num && osd_pending_list_size_map.size()==osd_num && osd_pending_list_size_map_write.size()==osd_num){
-          int first_flag=1;
+          dout(0)<<" mydebug: for 8 OSD "<<dendl;
           for(int i=0;i<osd_num;i++){ //对于8个osd
+            int first_flag=1;
             if(osd_cons.find(i)!=osd_cons.end()){
               for (auto& con : osd_cons.find(i)->second) {
                 if(con->is_connected()){
-                  
+                  dout(0)<<" mydebug: prepare status_message "<<dendl;
                   MOSDStatus *status_message = new MOSDStatus();
                   status_message->osd_disk_read_time_map = osd_disk_read_time_map;
                   status_message->osd_pending_list_size_map = osd_pending_list_size_map;
@@ -551,7 +553,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
                   }
                   con->send_message(status_message);
                 }else{
-                  //dout(0)<<" mydebug: is not connected "<<dendl;
+                  dout(0)<<" mydebug: is not connected "<<dendl;
                 } 
               }         
             }else{
