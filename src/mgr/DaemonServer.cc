@@ -551,13 +551,13 @@ bool DaemonServer::handle_report(MMgrReport *m)
                   }
                   con->send_message(status_message);
                 }else{
-                  dout(0)<<" mydebug: is not connected "<<dendl;
+                  //dout(0)<<" mydebug: is not connected "<<dendl;
                 } 
               }         
             }
           }
         }else{
-          dout(0)<<" mydebug: two map is not ready!"<<dendl;
+          //dout(0)<<" mydebug: two map is not ready!"<<dendl;
         }
         gio_update_mutex.unlock();
       }
