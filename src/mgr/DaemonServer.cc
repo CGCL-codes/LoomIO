@@ -511,7 +511,7 @@ bool DaemonServer::handle_report(MMgrReport *m)
       auto instances_2 = daemon_counters.instances.find("osd.pending_sub_read_num");
       if(instances_2!=daemon_counters.instances.end()){
         osd_pending_list_size_map[std::stoi(key.second)] = instances_2->second.get_current();
-        dout(0)<<" mydebug: updata osd_pending_list_size_map"<<dendl;
+        dout(0)<<" mydebug: updata osd_pending_list_size_map["<<std::stoi(key.second)<<"]="<<instances_2->second.get_current();<<dendl;
       }else{
         dout(0)<<" mydebug: can not updata osd_pending_list_size_map"<<dendl;
       }
@@ -547,6 +547,10 @@ bool DaemonServer::handle_report(MMgrReport *m)
                       send_flag=1;
                     }
                   }
+                  if(send_flag==0){
+                    dout(0)<<" mydebug: all 0"<<dendl;
+                  }
+
                   if(send_flag&&first_flag){
                     dout(0)<<" mydebug: send status_message to OSD."<<i<<", ref="<<con->get_peer_addr()<<", pending list="<<status_message->osd_pending_list_size_map<<dendl;
                     first_flag=0;
