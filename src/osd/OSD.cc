@@ -7988,13 +7988,13 @@ void OSD::handle_status(MOSDStatus *m)
   pending_list_size_map_write = m->osd_pending_list_size_map_write;
   dout(0) << " mydebug: after updating: " << dendl;
   for(int i=0;i<disk_latency_map.size();i++){
-    dout(0) << " mydebug: disk_latency_map["<<i<<"]="<<disk_latency_map[i]<< dendl;
+    //dout(0) << " mydebug: disk_latency_map["<<i<<"]="<<disk_latency_map[i]<< dendl;
   }
   for(int i=0;i<pending_list_size_map.size();i++){
-    dout(0) << " mydebug: pending_list_size_map["<<i<<"]="<<pending_list_size_map[i]<< dendl;
+    //dout(0) << " mydebug: pending_list_size_map["<<i<<"]="<<pending_list_size_map[i]<< dendl;
   }
   for(int i=0;i<pending_list_size_map_write.size();i++){
-    dout(0) << " mydebug: pending_list_size_map_write["<<i<<"]="<<pending_list_size_map_write[i]<< dendl;
+    //dout(0) << " mydebug: pending_list_size_map_write["<<i<<"]="<<pending_list_size_map_write[i]<< dendl;
   }
   schedule_lock.unlock();
   m->put();//put功能不明，先待定
