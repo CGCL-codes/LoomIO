@@ -7982,12 +7982,12 @@ void OSD::handle_scrub(MOSDScrub *m)
 
 void OSD::handle_status(MOSDStatus *m)
 {
-  dout(0) << " mydebug: in handle_status " << dendl;
+  //dout(0) << " mydebug: in handle_status " << dendl;
   schedule_lock.lock();
   disk_latency_map = m->osd_disk_read_time_map;
   pending_list_size_map = m->osd_pending_list_size_map;
   pending_list_size_map_write = m->osd_pending_list_size_map_write;
-  dout(0) << " mydebug: after updating: " << dendl;
+  //dout(0) << " mydebug: after updating: " << dendl;
   for(int i=0;i<disk_latency_map.size();i++){
     //dout(0) << " mydebug: disk_latency_map["<<i<<"]="<<disk_latency_map[i]<< dendl;
   }
