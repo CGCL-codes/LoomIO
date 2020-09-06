@@ -2400,6 +2400,10 @@ std::vector<Option> get_global_options() {
     .set_default(0)
     .set_description(""),
 
+    Option("osd_gio_reset", Option::TYPE_INT, Option::LEVEL_ADVANCED)
+    .set_default(0)
+    .set_description(""),
+
     Option("osd_gio_estimation_factor", Option::TYPE_FLOAT, Option::LEVEL_ADVANCED)
     .set_default(0.3)
     .set_description(""),
