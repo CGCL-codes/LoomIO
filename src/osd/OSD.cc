@@ -295,6 +295,7 @@ OSDService::OSDService(OSD *osd) :
   }
   for(int i=0;i<NUM_OSD;i++){
         queue_map.push_back(0);
+        accumulate_queue_map.push_back(0);
   }
   for(int i=0;i<NUM_OSD;i++){
         last_time.push_back(string("0"));
@@ -10556,7 +10557,7 @@ void OSD::handle_conf_change(const struct md_config_t *conf,
   }
 
   if (changed.count("osd_gio_reset")) {
-    
+    service.gio_reset = cct->_conf->osd_gio_reset;
   }
 
   if (changed.count("osd_gio_estimation_factor")) {

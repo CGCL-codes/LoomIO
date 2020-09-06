@@ -383,10 +383,12 @@ public:
   //for gio
   vector<int> queue_map;
   vector<string> last_time;
+  vector<int> accumulate_queue_map;
   int gio_show_interval;
   int gio_wait_interval;
   int gio_coordination_granularity;
   int gio_estimation;
+  int gio_reset;
 
 
   OSD *osd;
