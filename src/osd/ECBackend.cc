@@ -1776,7 +1776,7 @@ int ECBackend::get_min_avail_to_read_shards(
         dout(0)<<" mydebug: reset gio complete"<<dendl;
       }
       for(int i=0;i<NUM_OSD;i++){
-        osd->accumulate_queue_map[i]=0;
+        //osd->accumulate_queue_map[i]=0;
         queue_map[i] = osd->accumulate_queue_map[i];
         queue_map_size++;
       }
