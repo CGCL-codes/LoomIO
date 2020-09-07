@@ -799,7 +799,7 @@ bool ECBackend::_handle_message(
     reply->trace = _op->pg_trace;
     get_parent()->send_message_osd_cluster(
       op->op.from.osd, reply, get_parent()->get_epoch());
-    //dout(0) << " mydebug::" << "#"<<op->op.to_read.begin()->first.oid.name<<",sub_read_op_finish," << ceph_clock_now()<<"#" << dendl;
+    dout(0) << " mydebug:sub_read_op_finish" << "##" << dendl;
     return true;
   }
   case MSG_OSD_EC_READ_REPLY: {
@@ -1665,8 +1665,8 @@ int ECBackend::get_min_avail_to_read_shards(
     before_str+=to_string(i->second.osd);
   }
   
-  dout(0) << ": mydebug: schedule_info#before,"<< hoid.oid.name << "," <<before_str<<"#"<< dendl;
-
+  //dout(0) << ": mydebug: schedule_info#before,"<< hoid.oid.name << "," <<before_str<<"#"<< dendl;
+  dout(0)<<" mydebug:schedule_info#"<<ceph_clock_now()<<","<<before_str<<"#"<<dendl;
   //straggler = 6 & 7
   // if(osd->cct->_conf->osd_imbalance_pattern != 0){
   //   for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
@@ -1792,7 +1792,7 @@ int ECBackend::get_min_avail_to_read_shards(
       dout(0)<<" mydebug: did not get complete queue_map"<<dendl;
     }else{
       for(int i=0;i<NUM_OSD;i++){
-        dout(0)<<" queue_map["<<i<<"]="<<queue_map[i]<<dendl;
+        //dout(0)<<" queue_map["<<i<<"]="<<queue_map[i]<<dendl;
       }
     }
 
@@ -1806,7 +1806,7 @@ int ECBackend::get_min_avail_to_read_shards(
       ++i)
     {
       have2[have2_pos]=i->second.osd;
-      dout(0)<<" mydebug: have2["<<have2_pos<<"]="<<have2[have2_pos]<<dendl;
+      //dout(0)<<" mydebug: have2["<<have2_pos<<"]="<<have2[have2_pos]<<dendl;
       have2_pos++;
     }
     //start to handle
@@ -1822,7 +1822,7 @@ int ECBackend::get_min_avail_to_read_shards(
     reply = (redisReply *)redisCommand(context, "exists %s", info_key.c_str());
     string info_str;
     havetostr(info_str,have2);
-    dout(0)<<" mydebug: infostr="<<info_str<<dendl;
+    //dout(0)<<" mydebug: infostr="<<info_str<<dendl;
     if(reply->integer == 0){//如果不存在就创建info_key和num_key
       //cout<<info_key<<" no exist!" <<endl;
       dout(0)<<" mydebug: info no exist!"<<dendl;
@@ -1841,7 +1841,7 @@ int ECBackend::get_min_avail_to_read_shards(
       reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
       dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
     }else{
-      dout(0)<<" mydebug: info exist!"<<dendl;
+      //dout(0)<<" mydebug: info exist!"<<dendl;
 			utime_t start_time = ceph_clock_now();
       int first_check=1; 
       while(1){ //如果存在就等待拿的是不是差不多了
@@ -1850,18 +1850,20 @@ int ECBackend::get_min_avail_to_read_shards(
           //当全部取完时，可以退出
           //cout<<info_key<<" has been consumed, start next!"<<endl;
           if(first_check){
-            dout(0)<<"consumed first_check"<<dendl;
+            //dout(0)<<"consumed first_check"<<dendl;
           }else{
-            dout(0)<<"consumed other_check"<<dendl;
-            dout(0)<<info_key<<" pub wait for  "<<ceph_clock_now()-start_time<<dendl;
+            //dout(0)<<"consumed other_check"<<dendl;
+            //dout(0)<<info_key<<" pub wait for  "<<ceph_clock_now()-start_time<<dendl;
           }
+          dout(0)<<" mydebug:coor_info#"<<stoi(string(reply->str))<<"#"<<dendl;
           break;
         }
         first_check=0;       
         utime_t cur_time = ceph_clock_now();
         if((cur_time-start_time)>time_out_interval){
           //cout<<info_key<<" time_out, start next!"<<endl;
-          dout(0)<<info_key<<" time_out, start next!, consumed by "<<stoi(string(reply->str))<<dendl;
+          //dout(0)<<info_key<<" time_out, start next!, consumed by "<<stoi(string(reply->str))<<dendl;
+          dout(0)<<" mydebug:coor_info#"<<stoi(string(reply->str))<<"#"<<dendl;
           break;
         }
       }
@@ -1877,11 +1879,11 @@ int ECBackend::get_min_avail_to_read_shards(
       reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
       reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),pub_time.usec());
       reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),pub_time.sec());
-      dout(0)<<"redis_info#set_latency,"<<(ceph_clock_now()-start_set)/4*1000000<<"#"<<dendl;
-      dout(0)<<"set sec_key ="<<pub_time.sec()<<dendl;
-      dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
+      //dout(0)<<"redis_info#set_latency,"<<(ceph_clock_now()-start_set)/4*1000000<<"#"<<dendl;
+      //dout(0)<<"set sec_key ="<<pub_time.sec()<<dendl;
+      //dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
       reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
-      dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
+      //dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
     }
 
     //开始获取别的osd的obj
@@ -1899,13 +1901,13 @@ int ECBackend::get_min_avail_to_read_shards(
 
     while(1){
       if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity) || have_got[i]){//跳过自己id的偏移以及已经获得的id
-        dout(0)<<"skip "<<i<<"!"<<dendl;
+        //dout(0)<<"skip "<<i<<"!"<<dendl;
         i++;
         i%=osd->cct->_conf->osd_gio_coordination_granularity;
         continue;
       }
       int actual_id=i+region_id*osd->cct->_conf->osd_gio_coordination_granularity;
-      dout(0)<<"check "<<actual_id<<"..."<<dendl;
+      //dout(0)<<"check "<<actual_id<<"..."<<dendl;
       string target_key = string("info")+to_string(actual_id);
       string target_num = string("num")+to_string(actual_id);
       string target_time = string("time")+to_string(actual_id);
@@ -1929,17 +1931,17 @@ int ECBackend::get_min_avail_to_read_shards(
         reply = (redisReply *)redisCommand(context, "get %s", target_sec.c_str());      
         string sec_time = reply->str;
         if((start_time.sec()-stoi(sec_time))>3){//如果时间戳太旧了，就下一个
-          dout(0)<<"start_time.sec()="<<start_time.sec()<<", sec_time="<<stoi(sec_time)<<", deviation="<<start_time.sec()-stoi(sec_time)<<dendl;
-          dout(0)<<target_key<<" is too old"<<dendl;
+          //dout(0)<<"start_time.sec()="<<start_time.sec()<<", sec_time="<<stoi(sec_time)<<", deviation="<<start_time.sec()-stoi(sec_time)<<dendl;
+          //dout(0)<<target_key<<" is too old"<<dendl;
           goto end;
         }
         //如果obj信息合适
         //cout<<"get proper "<<target_key<<endl;
-        dout(0)<<"get proper "<<target_key<<dendl;
+        //dout(0)<<"get proper "<<target_key<<dendl;
         osd->last_time[actual_id] = temp_time;
         utime_t start_get = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "get %s", target_key.c_str());
-        dout(0)<<"redis_info#get_latency,"<<(ceph_clock_now()-start_get)*1000000<<"#"<<dendl;
+        //dout(0)<<"redis_info#get_latency,"<<(ceph_clock_now()-start_get)*1000000<<"#"<<dendl;
         //cout<<reply->type<<endl;
         int temp_have[EC_K+EC_M];
         if(reply->str==NULL){
@@ -1951,7 +1953,7 @@ int ECBackend::get_min_avail_to_read_shards(
         //reply = (redisReply *)redisCommand(context, "decr %s", target_num.c_str());
         utime_t start_incr = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "incr %s", target_num.c_str());
-        dout(0)<<"redis_info#incr_latency,"<<(ceph_clock_now()-start_incr)*1000000<<"#"<<dendl;
+        //dout(0)<<"redis_info#incr_latency,"<<(ceph_clock_now()-start_incr)*1000000<<"#"<<dendl;
         strtohave(temp_str,temp_have);//读出的信息存放在temp_have中，
         // for(int i=0;i<(EC_K+EC_M);i++){
         //     cout<<"strtohave:"<<temp_have[i]<<endl;
@@ -1966,14 +1968,16 @@ int ECBackend::get_min_avail_to_read_shards(
       }
     end:            
       if(num_got>=(osd->cct->_conf->osd_gio_coordination_granularity-1)){//首先保证至少获得这么多 
-        dout(0)<<"have got all: "<<osd->cct->_conf->osd_gio_coordination_granularity-1<<dendl;
-        dout(0)<<"gather wait for"<<ceph_clock_now()-start_time<<dendl;
+        //dout(0)<<"have got all: "<<osd->cct->_conf->osd_gio_coordination_granularity-1<<dendl;
+        //dout(0)<<"gather wait for"<<ceph_clock_now()-start_time<<dendl;
+        //dout(0)<<" mydebug:coor_info#"<<num_got<<"#"<<dendl;
         break;
         //如果全部拿到了，就退出                   
       }
       utime_t cur_time = ceph_clock_now();
       if((cur_time-start_time)>time_out_interval){//如果实在等不到了，也推出
-        dout(0)<<"dont wait anymore, have got "<<num_got<<dendl;
+        //dout(0)<<"dont wait anymore, have got "<<num_got<<dendl;
+        //dout(0)<<" mydebug:coor_info#"<<num_got<<"#"<<dendl;
         break;
       }
       i++;
