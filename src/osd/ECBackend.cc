@@ -2032,6 +2032,7 @@ int ECBackend::get_min_avail_to_read_shards(
         // }
         for(int i=0;i<NUM_OSD;i++){
           queue_map[i] = osd->accumulate_queue_map[i];
+          dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
         }
       }
       if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
