@@ -2049,6 +2049,11 @@ int ECBackend::get_min_avail_to_read_shards(
         }
       }
     }
+    int queue_sum=0;
+    for(int i=0;i<NUM_OSD;i++){
+      queue_sum+=osd->accumulate_queue_map[i]
+      dout(0)<<"mydebug:queue_info#"<<queue_sum<<"#"<<dendl;
+    }
     //dout(0)<<" mydebug:after_schedule:"<<queue_map<<dendl;
     osd->osd->schedule_lock.unlock();
 
