@@ -1836,10 +1836,10 @@ int ECBackend::get_min_avail_to_read_shards(
       reply = (redisReply *)redisCommand(context, "set %s %d", num_key.c_str(),0);
       reply = (redisReply *)redisCommand(context, "set %s %d", time_key.c_str(),pub_time.usec());
       reply = (redisReply *)redisCommand(context, "set %s %d", sec_key.c_str(),pub_time.sec());
-      dout(0)<<"set sec_key ="<<pub_time.sec()<<dendl;
-      dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
-      reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
-      dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
+      //dout(0)<<"set sec_key ="<<pub_time.sec()<<dendl;
+      //dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
+      //reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
+      //dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
     }else{
       //dout(0)<<" mydebug: info exist!"<<dendl;
 			utime_t start_time = ceph_clock_now();
