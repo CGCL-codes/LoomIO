@@ -2072,7 +2072,14 @@ int ECBackend::get_min_avail_to_read_shards(
           }
         }
         if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
-          //需要定时删除掉自己之前的调度结果 todo
+          //需要定时删除掉自己之前的调度结果,如果是自己的话，就把当前的coor_res给放到队列里面去
+          osd->trash_queue.push(coor_res);
+          if(osd->trash_queue.size()>20){
+            string to_delete = osd->trash_queue.front();
+            osd->trash_queue.pop();
+            reply = (redisReply *)redisCommand(context, "del %s", to_delete.c_str());
+          }
+          //
           for(int j=EC_K;j<(EC_K+EC_M);j++){
             int temp_osd_id = load_of_shard[j].first;//不应该读这个osd
             int k;//相应osd所对应的shardid
@@ -2100,7 +2107,14 @@ int ECBackend::get_min_avail_to_read_shards(
         }
 
         if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
-          //需要定时删除掉自己之前的调度结果 todo
+          //需要定时删除掉自己之前的调度结果,如果是自己的话，就把当前的coor_res给放到队列里面去
+          osd->trash_queue.push(coor_res);
+          if(osd->trash_queue.size()>20){
+            string to_delete = osd->trash_queue.front();
+            osd->trash_queue.pop();
+            reply = (redisReply *)redisCommand(context, "del %s", to_delete.c_str());
+          }
+          //
           for(int j=0;j<(EC_K+EC_M);j++){
             int find=0;
             for(int k=0;k<EC_K;k++){
