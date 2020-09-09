@@ -2006,10 +2006,9 @@ int ECBackend::get_min_avail_to_read_shards(
       string res_string;
       if(reply->integer == 0){//如果不存在，就正常操作
         dout(0)<<i<<" not processed!"<<dendl;
-        res_string="";
       }else{ //如果存在，就把他取出来
         reply2 = (redisReply *)redisCommand(context, "get %s", coor_res.c_str());
-        processed=0; //need change to 1
+        processed=1; //need change to 1
         res_string = reply2->str;
         dout(0)<<i<<" processed! res="<<res_string<<dendl;
       }
@@ -2021,6 +2020,7 @@ int ECBackend::get_min_avail_to_read_shards(
           load_of_shard.push_back(make_pair(schedule_map[i][j], queue_map[schedule_map[i][j]]));
         }
         sort(load_of_shard.begin(),load_of_shard.end(),mycmp2);
+        res_string="";
         for(int j=0;j<EC_K;j++){//调度最小的k个
             //queue_map[load_of_shard[j].first]++;//for primitive gio
             //osd->osd->pending_list_size_map[load_of_shard[j].first]++;//for last gio
@@ -2031,9 +2031,9 @@ int ECBackend::get_min_avail_to_read_shards(
         dout(0)<<i<<" after schedule, res="<<res_string<<dendl;
         reply = (redisReply *)redisCommand(context, "setnx %s %s", coor_res.c_str(),res_string.c_str());
         if(reply->type == REDIS_REPLY_STATUS && strcmp(reply->str, "OK")==0){
-          dout(0)<<i<<" set res success!!"<<dendl;
+          dout(0)<<i<<" set res success!!"<<reply->str<<dendl;
         }else{
-          dout(0)<<i<<" conflict!"<<dendl;
+          dout(0)<<i<<" conflict!"<<reply->str<<dendl;
         }
         //更新queue_map
         if(osd->cct->_conf->osd_gio_estimation==1){
@@ -2084,8 +2084,36 @@ int ECBackend::get_min_avail_to_read_shards(
             //dout(0)<<"have.erase "<<k<<dendl;
           }
         }
-      }else{//processed==1,如果之前有结果，就直接使用之前的结果
-        //todo
+      }else{//processed==1,如果之前有结果，就直接使用之前的结果，当节点数量上升时需要改变resstring的定义
+        dout(0)<<i<<" res_string= "<<res_string<<dendl;
+        vector<int> temp_res_vec;
+        for(int j=0;j<EC_K;j++){
+          int temp_int = stoi(res_string[j]); //todo
+          temp_res_vec.push_back(temp_int);
+          osd->accumulate_queue_map[temp_int]++;
+          //更新queuemap
+          for(int i=0;i<NUM_OSD;i++){
+            queue_map[i] = osd->accumulate_queue_map[i];
+            dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
+          }
+        }
+
+        if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
+          //需要定时删除掉自己之前的调度结果 todo
+          for(int j=0;j<(EC_K+EC_M);j++){
+            int find=0;
+            for(int k=0;k<EC_K;k++){
+              if(temp_res_vec[k]==have2[j]){
+                find=1;
+                break;
+              }
+            }
+            if(find==0){
+               have.erase(j);
+               dout(0)<<"have.erase "<<j<<dendl;
+            }             
+          }
+        }
       }
     }
     int queue_sum=0;
