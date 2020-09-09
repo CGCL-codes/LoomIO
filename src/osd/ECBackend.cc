@@ -2030,11 +2030,11 @@ int ECBackend::get_min_avail_to_read_shards(
         //更新redis中的值，使用setnx保证唯一
         dout(0)<<i<<" after schedule, res="<<res_string<<dendl;
         reply = (redisReply *)redisCommand(context, "setnx %s %s", coor_res.c_str(),res_string.c_str());
-        dout(0)<<i<<" replyres: "<<reply->type<<" "<<reply->integer<<dendl;
-        if(reply->type == REDIS_REPLY_STATUS && strcmp(reply->str, "OK")==0){
-          dout(0)<<i<<" set res success!!"<<reply->str<<dendl;
+        //dout(0)<<i<<" replyres: "<<reply->type<<" "<<reply->integer<<dendl;
+        if(reply->integer==0){
+          //dout(0)<<i<<" conflict!"<<dendl;
         }else{
-          dout(0)<<i<<" conflict!"<<reply->str<<dendl;
+          //dout(0)<<i<<" set res success!"<<dendl;
         }
         //更新queue_map
         if(osd->cct->_conf->osd_gio_estimation==1){

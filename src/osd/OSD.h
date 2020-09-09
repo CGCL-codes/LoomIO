@@ -384,6 +384,7 @@ public:
   vector<int> queue_map;
   vector<string> last_time;
   vector<int> accumulate_queue_map;
+  queue<string> trash_queue;
   int gio_show_interval;
   int gio_wait_interval;
   int gio_coordination_granularity;
