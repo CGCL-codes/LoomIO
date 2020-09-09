@@ -2088,7 +2088,7 @@ int ECBackend::get_min_avail_to_read_shards(
         dout(0)<<i<<" res_string= "<<res_string<<dendl;
         vector<int> temp_res_vec;
         for(int j=0;j<EC_K;j++){
-          int temp_int = stoi(res_string[j]); //todo
+          int temp_int = res_string[j]-'0'; //todo
           temp_res_vec.push_back(temp_int);
           osd->accumulate_queue_map[temp_int]++;
           //更新queuemap
