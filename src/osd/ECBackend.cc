@@ -1810,18 +1810,21 @@ int ECBackend::get_min_avail_to_read_shards(
       have2_pos++;
     }
     //start to handle
-    int schedule_map[NUM_OSD][EC_K+EC_M];
+    int schedule_map[NUM_OSD][EC_K+EC_M];//初始化schedulemp
     for(int i=0;i<NUM_OSD;i++){
       for(int j=0;j<(EC_K+EC_M);j++){
         schedule_map[i][j]=-1;
       }   
     }
+    //把自己的map给加上
     for(int i=0;i<(EC_K+EC_M);i++){
         schedule_map[my_id%osd->cct->_conf->osd_gio_coordination_granularity][i]=have2[i];
     }
     reply = (redisReply *)redisCommand(context, "exists %s", info_key.c_str());
     string info_str;
     havetostr(info_str,have2);
+    //声明coor_times,先把自己的加上
+    map<int,string> coor_times;
     //dout(0)<<" mydebug: infostr="<<info_str<<dendl;
     if(reply->integer == 0){//如果不存在就创建info_key和num_key
       //cout<<info_key<<" no exist!" <<endl;
@@ -1840,6 +1843,8 @@ int ECBackend::get_min_avail_to_read_shards(
       //dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
       //reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
       //dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
+      coor_times[my_id] = to_string(pub_time.sec())+to_string(pub_time.usec());
+      dout(0)<<"set coor_times of myid:"<<coor_times[my_id]<<dendl;
     }else{
       //dout(0)<<" mydebug: info exist!"<<dendl;
 			utime_t start_time = ceph_clock_now();
@@ -1884,6 +1889,8 @@ int ECBackend::get_min_avail_to_read_shards(
       //dout(0)<<"set res = "<<reply->str<<dendl;//hhaa
       reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
       //dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
+      coor_times[my_id] = to_string(pub_time.sec())+to_string(pub_time.usec());
+      dout(0)<<"set coor_times of myid:"<<coor_times[my_id]<<dendl;
     }
 
     //开始获取别的osd的obj
@@ -1898,6 +1905,7 @@ int ECBackend::get_min_avail_to_read_shards(
 		utime_t start_time = ceph_clock_now();
     //cout<<"start_time="<<start_time<<endl;
     int region_id = my_id / osd->cct->_conf->osd_gio_coordination_granularity;
+    
 
     while(1){
       if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity) || have_got[i]){//跳过自己id的偏移以及已经获得的id
@@ -1962,6 +1970,8 @@ int ECBackend::get_min_avail_to_read_shards(
         for(int j=0;j<(EC_K+EC_M);j++){
           schedule_map[i][j] = temp_have[j];
         }
+        //将需要协调的对象的时间给保存下来
+        coor_times[actual_id] = sec_time+temp_time;
         //获得的加1
         num_got++;
         have_got[i]=1;
@@ -1989,64 +1999,93 @@ int ECBackend::get_min_avail_to_read_shards(
       if(schedule_map[i][0]==-1){
         continue;//跳过没有收到信息的osd
       }
+      //先查看是否已经存在这个结果了
+      string coor_res = to_string(i)+coor_times[i];
+      reply = (redisReply *)redisCommand(context, "exists %s", coor_res.c_str());
+      int processed = 0;
+      string res_string;
+      if(reply->integer == 0){//如果不存在，就正常操作
+        dout(0)<<i<<" not processed!"<<dendl;
+        res_string="";
+      }else{ //如果存在，就把他取出来
+        reply2 = (redisReply *)redisCommand(context, "get %s", coor_res.c_str());
+        processed=0; //need change to 1
+        res_string = reply2->str;
+        dout(0)<<i<<" processed! res="<<res_string<<dendl;
+      }
+      
+      if(processed==0){//如果还没被处理过
       //调度就是选最少的四个
-      vector<pair<int,float>> load_of_shard;
-      for(int j=0;j<(EC_K+EC_M);j++){
-        load_of_shard.push_back(make_pair(schedule_map[i][j], queue_map[schedule_map[i][j]]));
-      }
-      sort(load_of_shard.begin(),load_of_shard.end(),mycmp2);
-      for(int j=0;j<EC_K;j++){//调度最小的k个
-          //queue_map[load_of_shard[j].first]++;//for primitive gio
-          //osd->osd->pending_list_size_map[load_of_shard[j].first]++;//for last gio
-          osd->accumulate_queue_map[load_of_shard[j].first]++;
-      }
-      //更新queue_map
-      if(osd->cct->_conf->osd_gio_estimation==1){
-        for(auto it : osd->osd->pending_list_size_map){
-          int cur_osd = it.first;
-          int cur_size = it.second;
-          int write_size = osd->osd->pending_list_size_map_write[cur_osd];
-          //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
-          int actual_disk_latency=0;//nsec
-          if(osd->cct->_conf->osd_gio_estimation_disk==0){
-            actual_disk_latency=osd->osd->disk_latency_map[cur_osd];
-          }else{
-            actual_disk_latency=osd->cct->_conf->osd_gio_estimation_disk;
-          }
-          float factor = ((float)((write_size*write_size/(write_size+cur_size+1)+cur_size)*actual_disk_latency))/1000000000;
-          //dout(0)<<" mydebug: factor="<<factor<<dendl;
-          //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
-          queue_map[cur_osd] = osd->cct->_conf->osd_gio_estimation_factor*factor+((float)(actual_disk_latency))/1000000000;
-          //queue_map_size++;
+        vector<pair<int,float>> load_of_shard;
+        for(int j=0;j<(EC_K+EC_M);j++){
+          load_of_shard.push_back(make_pair(schedule_map[i][j], queue_map[schedule_map[i][j]]));
         }
-      }else{
-        // for(auto it : osd->osd->pending_list_size_map){ //for last gio
-        //   int cur_osd = it.first;
-        //   int cur_size = it.second;
-        //   //int write_size = osd->osd->pending_list_size_map_write[cur_osd];
-        //   //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
-        //   //dout(0)<<" mydebug: factor="<<factor<<dendl;
-        //   //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
-        //   queue_map[cur_osd] = osd->osd->pending_list_size_map[cur_osd];
-        //   //queue_map_size++;
-        // }
-        for(int i=0;i<NUM_OSD;i++){
-          queue_map[i] = osd->accumulate_queue_map[i];
-          dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
+        sort(load_of_shard.begin(),load_of_shard.end(),mycmp2);
+        for(int j=0;j<EC_K;j++){//调度最小的k个
+            //queue_map[load_of_shard[j].first]++;//for primitive gio
+            //osd->osd->pending_list_size_map[load_of_shard[j].first]++;//for last gio
+            osd->accumulate_queue_map[load_of_shard[j].first]++;
+            res_string+=to_string(load_of_shard[j].first);
         }
-      }
-      if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
-        for(int j=EC_K;j<(EC_K+EC_M);j++){
-          int temp_osd_id = load_of_shard[j].first;//不应该读这个osd
-          int k;//相应osd所对应的shardid
-          for(k=0;k<(EC_K+EC_M);k++){
-            if(have2[k]==temp_osd_id){
-              break;
+        //更新redis中的值，使用setnx保证唯一
+        dout(0)<<i<<" after schedule, res="<<res_string<<dendl;
+        reply = (redisReply *)redisCommand(context, "setnx %s %s", coor_res.c_str(),res_string.c_str());
+        if(reply->type == REDIS_REPLY_STATUS && strcmp(reply->str, "OK")==0){
+          dout(0)<<i<<" set res success!!"<<dendl;
+        }else{
+          dout(0)<<i<<" conflict!"<<dendl;
+        }
+        //更新queue_map
+        if(osd->cct->_conf->osd_gio_estimation==1){
+          for(auto it : osd->osd->pending_list_size_map){
+            int cur_osd = it.first;
+            int cur_size = it.second;
+            int write_size = osd->osd->pending_list_size_map_write[cur_osd];
+            //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
+            int actual_disk_latency=0;//nsec
+            if(osd->cct->_conf->osd_gio_estimation_disk==0){
+              actual_disk_latency=osd->osd->disk_latency_map[cur_osd];
+            }else{
+              actual_disk_latency=osd->cct->_conf->osd_gio_estimation_disk;
             }
+            float factor = ((float)((write_size*write_size/(write_size+cur_size+1)+cur_size)*actual_disk_latency))/1000000000;
+            //dout(0)<<" mydebug: factor="<<factor<<dendl;
+            //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
+            queue_map[cur_osd] = osd->cct->_conf->osd_gio_estimation_factor*factor+((float)(actual_disk_latency))/1000000000;
+            //queue_map_size++;
           }
-          have.erase(k);
-          //dout(0)<<"have.erase "<<k<<dendl;
+        }else{
+          // for(auto it : osd->osd->pending_list_size_map){ //for last gio
+          //   int cur_osd = it.first;
+          //   int cur_size = it.second;
+          //   //int write_size = osd->osd->pending_list_size_map_write[cur_osd];
+          //   //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
+          //   //dout(0)<<" mydebug: factor="<<factor<<dendl;
+          //   //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
+          //   queue_map[cur_osd] = osd->osd->pending_list_size_map[cur_osd];
+          //   //queue_map_size++;
+          // }
+          for(int i=0;i<NUM_OSD;i++){
+            queue_map[i] = osd->accumulate_queue_map[i];
+            dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
+          }
         }
+        if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
+          //需要定时删除掉自己之前的调度结果 todo
+          for(int j=EC_K;j<(EC_K+EC_M);j++){
+            int temp_osd_id = load_of_shard[j].first;//不应该读这个osd
+            int k;//相应osd所对应的shardid
+            for(k=0;k<(EC_K+EC_M);k++){
+              if(have2[k]==temp_osd_id){
+                break;
+              }
+            }
+            have.erase(k);
+            //dout(0)<<"have.erase "<<k<<dendl;
+          }
+        }
+      }else{//processed==1,如果之前有结果，就直接使用之前的结果
+        //todo
       }
     }
     int queue_sum=0;
