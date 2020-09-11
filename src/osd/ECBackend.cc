@@ -1613,6 +1613,10 @@ bool mycmp(pair<shard_id_t,int> a, pair<shard_id_t,int> b) {
 	return a.second > b.second; //降序排列，延迟大的osd放前面
 }
 
+bool mycmp3(pair<int,int> a, pair<int,int> b) {
+	return a.second > b.second; //降序排列，延迟大的osd放前面
+}
+
 bool mycmp2(pair<int,float> a, pair<int,float> b) {
 	return a.second < b.second; //升序排列，延迟小的osd放前面
 }
@@ -1723,7 +1727,7 @@ int ECBackend::get_min_avail_to_read_shards(
     }
     //int load_map[] = {0,1,2,3,4,5,6,7};//primitive k-optimal
     vector<pair<shard_id_t,int>> load_of_shard;
-    vector<pair<shard_id_t,int>> load_of_shard2;
+    vector<pair<int,int>> load_of_shard2;
     for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
       i != shards.end();
       ++i)
@@ -1732,7 +1736,7 @@ int ECBackend::get_min_avail_to_read_shards(
       load_of_shard2.push_back(make_pair(i->second.osd, queue_map[i->second.osd]));
     }
     sort(load_of_shard.begin(),load_of_shard.end(),mycmp);
-    sort(load_of_shard2.begin(),load_of_shard2.end(),mycmp);
+    sort(load_of_shard2.begin(),load_of_shard2.end(),mycmp3);
     have.erase(load_of_shard[0].first);
     have.erase(load_of_shard[1].first);
     for(int i=2;i<(EC_K+EC_M);i++){//latest k-optimal
