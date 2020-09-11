@@ -1723,17 +1723,20 @@ int ECBackend::get_min_avail_to_read_shards(
     }
     //int load_map[] = {0,1,2,3,4,5,6,7};//primitive k-optimal
     vector<pair<shard_id_t,int>> load_of_shard;
+    vector<pair<shard_id_t,int>> load_of_shard2;
     for (map<shard_id_t, pg_shard_t>::iterator i = shards.begin();
       i != shards.end();
       ++i)
     {
       load_of_shard.push_back(make_pair(i->first, queue_map[i->second.osd]));
+      load_of_shard2.push_back(make_pair(i->second.osd, queue_map[i->second.osd]));
     }
     sort(load_of_shard.begin(),load_of_shard.end(),mycmp);
+    sort(load_of_shard2.begin(),load_of_shard2.end(),mycmp);
     have.erase(load_of_shard[0].first);
     have.erase(load_of_shard[1].first);
     for(int i=2;i<(EC_K+EC_M);i++){//latest k-optimal
-      osd->accumulate_queue_map[load_of_shard[i].first]++;
+      osd->accumulate_queue_map[load_of_shard2[i].first]++;
     }
     
   }else if(osd->gio){//gio
