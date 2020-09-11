@@ -1742,6 +1742,11 @@ int ECBackend::get_min_avail_to_read_shards(
     for(int i=2;i<(EC_K+EC_M);i++){//latest k-optimal
       osd->accumulate_queue_map[load_of_shard2[i].first]++;
     }
+    int queue_sum=0;
+    for(int i=0;i<NUM_OSD;i++){
+      queue_sum+=osd->accumulate_queue_map[i];
+      dout(0)<<"mydebug:queue_info#"<<queue_sum<<"#"<<dendl;
+    }
     
   }else if(osd->gio){//gio
     int my_id = get_parent()->whoami();
@@ -2125,7 +2130,7 @@ int ECBackend::get_min_avail_to_read_shards(
           osd->accumulate_queue_map[temp_int]++; //for latest gio
           for(int i=0;i<NUM_OSD;i++){ //for latest gio
             queue_map[i] = osd->accumulate_queue_map[i];
-            dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
+            //dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
           }
         }
 
