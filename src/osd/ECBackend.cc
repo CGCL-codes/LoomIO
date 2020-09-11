@@ -1758,28 +1758,28 @@ int ECBackend::get_min_avail_to_read_shards(
         queue_map_size++;
       }
     }else{
-      // for(auto it : osd->osd->pending_list_size_map){ //for last gio
-      //   int cur_osd = it.first;
-      //   int cur_size = it.second;
-      //   //int write_size = osd->osd->pending_list_size_map_write[cur_osd];
-      //   //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
-      //   //dout(0)<<" mydebug: factor="<<factor<<dendl;
-      //   //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
-      //   queue_map[cur_osd] = osd->osd->pending_list_size_map[cur_osd];
-      //   queue_map_size++;
-      // }
-      if(osd->gio_reset==1){
-        for(int i=0;i<NUM_OSD;i++){
-          osd->accumulate_queue_map[i] = 0;
-        }
-        osd->gio_reset=0;
-        dout(0)<<" mydebug: reset gio complete"<<dendl;
-      }
-      for(int i=0;i<NUM_OSD;i++){
-        //osd->accumulate_queue_map[i]=0;
-        queue_map[i] = osd->accumulate_queue_map[i];
+      for(auto it : osd->osd->pending_list_size_map){ //for last gio
+        int cur_osd = it.first;
+        int cur_size = it.second;
+        //int write_size = osd->osd->pending_list_size_map_write[cur_osd];
+        //dout(0)<<" mydebug: write_size="<<write_size<<dendl;
+        //dout(0)<<" mydebug: factor="<<factor<<dendl;
+        //dout(0)<<" mydebug: disk latency="<<osd->osd->disk_latency_map[cur_osd]<<dendl;
+        queue_map[cur_osd] = osd->osd->pending_list_size_map[cur_osd];
         queue_map_size++;
       }
+      // if(osd->gio_reset==1){ //latest gio
+      //   for(int i=0;i<NUM_OSD;i++){
+      //     osd->accumulate_queue_map[i] = 0;
+      //   }
+      //   osd->gio_reset=0;
+      //   dout(0)<<" mydebug: reset gio complete"<<dendl;
+      // }
+      // for(int i=0;i<NUM_OSD;i++){
+      //   //osd->accumulate_queue_map[i]=0;
+      //   queue_map[i] = osd->accumulate_queue_map[i];
+      //   queue_map_size++;
+      // }
     }
     //根据pendinglist的情况决定time_interval的大小，
     utime_t time_out_interval;
@@ -2022,9 +2022,9 @@ int ECBackend::get_min_avail_to_read_shards(
         sort(load_of_shard.begin(),load_of_shard.end(),mycmp2);
         res_string="";
         for(int j=0;j<EC_K;j++){//调度最小的k个
-            //queue_map[load_of_shard[j].first]++;//for primitive gio
+            queue_map[load_of_shard[j].first]++;//for primitive gio
             //osd->osd->pending_list_size_map[load_of_shard[j].first]++;//for last gio
-            osd->accumulate_queue_map[load_of_shard[j].first]++;
+            //osd->accumulate_queue_map[load_of_shard[j].first]++; //latest gio
             res_string+=to_string(load_of_shard[j].first);
         }
         //更新redis中的值，使用setnx保证唯一
@@ -2066,10 +2066,10 @@ int ECBackend::get_min_avail_to_read_shards(
           //   queue_map[cur_osd] = osd->osd->pending_list_size_map[cur_osd];
           //   //queue_map_size++;
           // }
-          for(int i=0;i<NUM_OSD;i++){
-            queue_map[i] = osd->accumulate_queue_map[i];
-            dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
-          }
+          // for(int i=0;i<NUM_OSD;i++){ // for latest gio
+          //   queue_map[i] = osd->accumulate_queue_map[i];
+          //   dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
+          // }
         }
         if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
           //需要定时删除掉自己之前的调度结果,如果是自己的话，就把当前的coor_res给放到队列里面去
@@ -2098,12 +2098,13 @@ int ECBackend::get_min_avail_to_read_shards(
         for(int j=0;j<EC_K;j++){
           int temp_int = res_string[j]-'0'; //todo
           temp_res_vec.push_back(temp_int);
-          osd->accumulate_queue_map[temp_int]++;
+          queue_map[temp_int]++; //for pritimitive gio
           //更新queuemap
-          for(int i=0;i<NUM_OSD;i++){
-            queue_map[i] = osd->accumulate_queue_map[i];
-            dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
-          }
+          //osd->accumulate_queue_map[temp_int]++; //for latest gio
+          // for(int i=0;i<NUM_OSD;i++){ //for latest gio
+          //   queue_map[i] = osd->accumulate_queue_map[i];
+          //   dout(0)<<"mydebug:queue_info#"<<osd->accumulate_queue_map[i]<<"#"<<dendl;
+          // }
         }
 
         if(i==(my_id%osd->cct->_conf->osd_gio_coordination_granularity)){//根据调度把自己的have给去了
