@@ -1747,7 +1747,7 @@ int ECBackend::get_min_avail_to_read_shards(
       queue_sum+=osd->accumulate_queue_map[i];
       dout(0)<<"mydebug:queue_info#"<<queue_sum<<"#"<<dendl;
     }
-    
+
   }else if(osd->gio){//gio
     int my_id = get_parent()->whoami();
     string info_key = string("info")+to_string(my_id);
@@ -2056,7 +2056,9 @@ int ECBackend::get_min_avail_to_read_shards(
         }
         //更新redis中的值，使用setnx保证唯一
         dout(0)<<i<<" after schedule, res="<<res_string<<dendl;
+        utime_t start_setnx = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "setnx %s %s", coor_res.c_str(),res_string.c_str());
+        dout(0)<<"redis_info#setnx_latency,"<<(ceph_clock_now()-start_setnx)*1000000<<"#"<<dendl;
         //dout(0)<<i<<" replyres: "<<reply->type<<" "<<reply->integer<<dendl;
         if(reply->integer==0){
           //dout(0)<<i<<" conflict!"<<dendl;
@@ -2104,7 +2106,9 @@ int ECBackend::get_min_avail_to_read_shards(
           if(osd->trash_queue.size()>20){
             string to_delete = osd->trash_queue.front();
             osd->trash_queue.pop();
+            utime_t start_del = ceph_clock_now();
             reply = (redisReply *)redisCommand(context, "del %s", to_delete.c_str());
+            dout(0)<<"redis_info#del_latency,"<<(ceph_clock_now()-start_del)*1000000<<"#"<<dendl;
           }
           //
           for(int j=EC_K;j<(EC_K+EC_M);j++){
