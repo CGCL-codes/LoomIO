@@ -1703,24 +1703,24 @@ int ECBackend::get_min_avail_to_read_shards(
     //vector<int> queue_map(NUM_OSD);
     int queue_map_size = 0;
     osd->osd->schedule_lock.lock();
-    // for(auto it : osd->osd->pending_list_size_map){ //for primitive k-optimal
-    //   int cur_osd = it.first;
-    //   int cur_size = it.second;
-    //   queue_map[cur_osd] = cur_size;//+queue_map_size/8 fff
-    //   queue_map_size++;
-    // }
-    if(osd->gio_reset==1){ //latest k-optimal
-        for(int i=0;i<NUM_OSD;i++){
-          osd->accumulate_queue_map[i] = 0;
-        }
-        osd->gio_reset=0;
-        dout(0)<<" mydebug: reset gio complete"<<dendl;
-    }
-    for(int i=0;i<NUM_OSD;i++){
-      //osd->accumulate_queue_map[i]=0;
-      queue_map[i] = osd->accumulate_queue_map[i];
+    for(auto it : osd->osd->pending_list_size_map){ //for primitive k-optimal
+      int cur_osd = it.first;
+      int cur_size = it.second;
+      queue_map[cur_osd] = cur_size;//+queue_map_size/8 fff
       queue_map_size++;
     }
+    // if(osd->gio_reset==1){ //latest k-optimal
+    //     for(int i=0;i<NUM_OSD;i++){
+    //       osd->accumulate_queue_map[i] = 0;
+    //     }
+    //     osd->gio_reset=0;
+    //     dout(0)<<" mydebug: reset gio complete"<<dendl;
+    // }
+    // for(int i=0;i<NUM_OSD;i++){
+    //   //osd->accumulate_queue_map[i]=0;
+    //   queue_map[i] = osd->accumulate_queue_map[i];
+    //   queue_map_size++;
+    // }
     osd->osd->schedule_lock.unlock();
     if(queue_map_size<NUM_OSD){
       dout(0)<<" mydebug: did not get complete queue_map"<<dendl;
@@ -1739,14 +1739,14 @@ int ECBackend::get_min_avail_to_read_shards(
     sort(load_of_shard2.begin(),load_of_shard2.end(),mycmp3);
     have.erase(load_of_shard[0].first);
     have.erase(load_of_shard[1].first);
-    for(int i=2;i<(EC_K+EC_M);i++){//latest k-optimal
-      osd->accumulate_queue_map[load_of_shard2[i].first]++;
-    }
-    int queue_sum=0;
-    for(int i=0;i<NUM_OSD;i++){
-      queue_sum+=osd->accumulate_queue_map[i];
-      dout(0)<<"mydebug:queue_info#"<<queue_sum<<"#"<<dendl;
-    }
+    // for(int i=2;i<(EC_K+EC_M);i++){//latest k-optimal
+    //   osd->accumulate_queue_map[load_of_shard2[i].first]++;
+    // }
+    // int queue_sum=0;
+    // for(int i=0;i<NUM_OSD;i++){
+    //   queue_sum+=osd->accumulate_queue_map[i];
+    //   dout(0)<<"mydebug:queue_info#"<<queue_sum<<"#"<<dendl;
+    // }
 
   }else if(osd->gio){//gio
     int my_id = get_parent()->whoami();
