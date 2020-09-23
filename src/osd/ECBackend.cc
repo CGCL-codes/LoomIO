@@ -1921,7 +1921,7 @@ int ECBackend::get_min_avail_to_read_shards(
     }
     
     utime_t start_rpush = ceph_clock_now();
-    reply = (redisReply *)redisCommand(context, "RPUSH testlist testtest");
+    //reply = (redisReply *)redisCommand(context, "RPUSH testlist testtest");
     dout(0)<<"redis_info#rpush_latency,"<<(ceph_clock_now()-start_rpush)*1000000<<"#"<<dendl;
     utime_t start_lpop = ceph_clock_now();
     reply = (redisReply *)redisCommand(context, "LPOP testlist ");
