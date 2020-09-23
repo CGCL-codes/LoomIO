@@ -1887,7 +1887,7 @@ int ECBackend::get_min_avail_to_read_shards(
             //dout(0)<<"consumed other_check"<<dendl;
             //dout(0)<<info_key<<" pub wait for  "<<ceph_clock_now()-start_time<<dendl;
           }
-          dout(0)<<" mydebug:coor_info#"<<stoi(string(reply->str))<<"#"<<dendl;
+          //dout(0)<<" mydebug:coor_info#"<<stoi(string(reply->str))<<"#"<<dendl;
           break;
         }
         first_check=0;       
@@ -1895,7 +1895,7 @@ int ECBackend::get_min_avail_to_read_shards(
         if((cur_time-start_time)>time_out_interval){
           //cout<<info_key<<" time_out, start next!"<<endl;
           //dout(0)<<info_key<<" time_out, start next!, consumed by "<<stoi(string(reply->str))<<dendl;
-          dout(0)<<" mydebug:coor_info#"<<stoi(string(reply->str))<<"#"<<dendl;
+          //dout(0)<<" mydebug:coor_info#"<<stoi(string(reply->str))<<"#"<<dendl;
           break;
         }
       }
@@ -1917,9 +1917,15 @@ int ECBackend::get_min_avail_to_read_shards(
       reply = (redisReply *)redisCommand(context, "get %s", sec_key.c_str());
       //dout(0)<<"get sec_key ="<<stoi(string(reply->str))<<dendl;
       coor_times[my_id] = to_string(pub_time.sec())+to_string(pub_time.usec());
-      dout(0)<<"set coor_times of myid:"<<coor_times[my_id]<<dendl;
+      //dout(0)<<"set coor_times of myid:"<<coor_times[my_id]<<dendl;
     }
-
+    
+    utime_t start_rpush = ceph_clock_now();
+    reply = (redisReply *)redisCommand(context, "RPUSH testlist testtest");
+    dout(0)<<"redis_info#rpush_latency,"<<(ceph_clock_now()-start_rpush)*1000000<<"#"<<dendl;
+    utime_t start_lpop = ceph_clock_now();
+    reply = (redisReply *)redisCommand(context, "LPOP testlist ");
+    dout(0)<<"redis_info#lpop_latency,"<<(ceph_clock_now()-start_lpop)*1000000<<"#"<<dendl;
     //开始获取别的osd的obj
     int num_got = 0;
     //循环遍历其他osd
@@ -1951,7 +1957,7 @@ int ECBackend::get_min_avail_to_read_shards(
       utime_t start_exist = ceph_clock_now();
       reply = (redisReply *)redisCommand(context, "exists %s", target_time.c_str());
       reply2 = (redisReply *)redisCommand(context, "exists %s", target_sec.c_str());
-      dout(0)<<"redis_info#exist_latency,"<<(ceph_clock_now()-start_exist)/2*1000000<<"#"<<dendl;
+      //dout(0)<<"redis_info#exist_latency,"<<(ceph_clock_now()-start_exist)/2*1000000<<"#"<<dendl;
       if(reply->integer == 0 || reply2->integer ==0){//如果target_time不存在就跳到后面判断是否结束
         dout(0)<<target_time<<" no exists!"<<dendl;
         goto end;
@@ -2058,10 +2064,10 @@ int ECBackend::get_min_avail_to_read_shards(
         dout(0)<<i<<" after schedule, res="<<res_string<<dendl;
         utime_t start_setnx = ceph_clock_now();
         reply = (redisReply *)redisCommand(context, "setnx %s %s", coor_res.c_str(),res_string.c_str());
-        dout(0)<<"redis_info#setnx_latency,"<<(ceph_clock_now()-start_setnx)*1000000<<"#"<<dendl;
+        //dout(0)<<"redis_info#setnx_latency,"<<(ceph_clock_now()-start_setnx)*1000000<<"#"<<dendl;
         //dout(0)<<i<<" replyres: "<<reply->type<<" "<<reply->integer<<dendl;
         if(reply->integer==0){
-          //dout(0)<<i<<" conflict!"<<dendl;
+          dout(0)<<i<<" conflict!"<<dendl;
         }else{
           //dout(0)<<i<<" set res success!"<<dendl;
         }
@@ -2108,7 +2114,7 @@ int ECBackend::get_min_avail_to_read_shards(
             osd->trash_queue.pop();
             utime_t start_del = ceph_clock_now();
             reply = (redisReply *)redisCommand(context, "del %s", to_delete.c_str());
-            dout(0)<<"redis_info#del_latency,"<<(ceph_clock_now()-start_del)*1000000<<"#"<<dendl;
+            //dout(0)<<"redis_info#del_latency,"<<(ceph_clock_now()-start_del)*1000000<<"#"<<dendl;
           }
           //
           for(int j=EC_K;j<(EC_K+EC_M);j++){
