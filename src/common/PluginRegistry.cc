@@ -164,8 +164,12 @@ int PluginRegistry::load(const std::string &type,
     lderr(cct) << __func__ << " plugin " << fname << " version "
 	       << code_version() << " != expected "
 	       << CEPH_GIT_NICE_VER << dendl;
-    dlclose(library);
-    return -EXDEV;
+    if(fname=="/usr/local/lib64/ceph/compressor/libceph_snappy.so"){
+      lderr(cct) << __func__ << " mydebug: dismiss libceph_snappy.so mismatch"<< dendl;
+    }else{
+       dlclose(library);
+       return -EXDEV;
+    }
   }
 
   int (*code_init)(CephContext *,
