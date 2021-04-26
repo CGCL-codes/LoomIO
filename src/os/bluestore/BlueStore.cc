@@ -10033,9 +10033,9 @@ void BlueStore::_do_write_small(
   blp.copy(length, bl);
 
   auto max_bsize = std::max(wctx->target_blob_size, min_alloc_size);
-  auto min_off = offset >= max_bsize ? offset - max_bsize : 0;
+  auto min_off = offset >= max_bsize ? offset - max_bsize : 0;//可能是为了确定去哪个offset里找lextent？因为小于max_bsize的话和0这个offset所在lextent就一样了？
   uint32_t alloc_len = min_alloc_size;
-  auto offset0 = P2ALIGN(offset, alloc_len);
+  auto offset0 = P2ALIGN(offset, alloc_len);//找到这个offset属于哪个对象分片
 
   dout(0) << "mydebug: target_blob_size="<<wctx->target_blob_size<<", min_alloc_size="
   <<min_alloc_size<<", max_bsize="<<max_bsize<<", min_off="<<min_off<<",offset="<<offset<<",offset0="<<offset0<< dendl;
