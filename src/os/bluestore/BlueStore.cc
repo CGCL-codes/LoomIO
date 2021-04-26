@@ -9511,12 +9511,12 @@ int BlueStore::queue_transactions(
   assert(posr);
   if (posr->p) {
     osr = static_cast<OpSequencer *>(posr->p.get());
-    dout(10) << __func__ << " existing " << osr << " " << *osr << dendl;
+    dout(0) << __func__ << " existing " << osr << " " << *osr << dendl;//change 10->0
   } else {
     osr = new OpSequencer(cct, this);
     osr->parent = posr;
     posr->p = osr;
-    dout(10) << __func__ << " new " << osr << " " << *osr << dendl;
+    dout(0) << __func__ << " new " << osr << " " << *osr << dendl;//change 10->0
   }
 
   // prepare
@@ -9591,7 +9591,7 @@ void BlueStore::_txc_add_transaction(TransContext *txc, Transaction *t)
 {
   Transaction::iterator i = t->begin();
 
-  _dump_transaction(cct, t, 30);
+  _dump_transaction(cct, t, 0);//change 30->0
 
   vector<CollectionRef> cvec(i.colls.size());
   unsigned j = 0;
@@ -10021,8 +10021,8 @@ void BlueStore::_do_write_small(
     bufferlist::iterator& blp,
     WriteContext *wctx)
 {
-  dout(10) << __func__ << " 0x" << std::hex << offset << "~" << length
-	   << std::dec << dendl;
+  dout(0) << __func__ << " 0x" << std::hex << offset << "~" << length
+	   << std::dec << dendl; //change 10->0
   assert(length < min_alloc_size);
   uint64_t end_offs = offset + length;
 
@@ -10036,6 +10036,10 @@ void BlueStore::_do_write_small(
   auto min_off = offset >= max_bsize ? offset - max_bsize : 0;
   uint32_t alloc_len = min_alloc_size;
   auto offset0 = P2ALIGN(offset, alloc_len);
+
+  dout(0) << "mydebug: target_blob_size="<<wctx->target_blob_size<<", min_alloc_size="
+  <<min_alloc_size<<", max_bsize="<<max_bsize<<", min_off="<<min_off<<",offset="<<offset<<",offset0="<<offset0<< dendl;
+
 
   bool any_change;
 
@@ -11054,9 +11058,9 @@ int BlueStore::_write(TransContext *txc,
 		      bufferlist& bl,
 		      uint32_t fadvise_flags)
 {
-  dout(15) << __func__ << " " << c->cid << " " << o->oid
+  dout(0) << __func__ << " " << c->cid << " " << o->oid
 	   << " 0x" << std::hex << offset << "~" << length << std::dec
-	   << dendl;
+	   << dendl;//change 15->0
   int r = 0;
   if (offset + length >= OBJECT_MAX_SIZE) {
     r = -E2BIG;
