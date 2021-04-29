@@ -10053,8 +10053,32 @@ void BlueStore::_do_write_small(
   o->extent_map.fault_range(db, min_off, offset + max_bsize - min_off);
 
   // Look for an existing mutable blob we can use.
+
+uint32_t logical_offset = 0;      ///< logical offset
+    uint32_t blob_offset = 0;         ///< blob offset
+    uint32_t length = 0;              ///< length
+    BlobRef  blob; 
+
   auto begin = o->extent_map.extent_map.begin();
   auto end = o->extent_map.extent_map.end();
+
+
+  //mydebug:for test
+  dout(0) << "mydebug: object's lextents dump:"<< dendl;
+  for(auto temp=begin;temp!=end;temp++){
+    dout(0) << "------------------"<< dendl;
+    dout(0) << "lextent logical_offset: "<<temp->logical_offset<< dendl;
+    dout(0) << "lextent length: "<<temp->length<< dendl;
+    dout(0) << "lextent logical_offset: "<<temp->logical_offset<< dendl;
+    dout(0) << "lextent blob_offset: "<<temp->blob_offset<< dendl;
+    dout(0) << "blob's logic_length = "<<ep->blob->get_blob().logical_length<< dendl;
+    dout(0) << "blob's pextents dump:"<< dendl;
+    for(auto tempb=temp->blob->get_blob().extents.begin();tempb!=temp->blob->get_blob().extents.end();tempb++){
+      tempb->dump();
+    }
+    dout(0) << "------------------"<< dendl;
+  }
+
   auto ep = o->extent_map.seek_lextent(offset);
   if (ep != begin) {
     --ep;
@@ -10064,9 +10088,9 @@ void BlueStore::_do_write_small(
   }
 
   if(ep!=end){
-    dout(0) << "mydebug: blob's logic_length = "<<ep->blob_end()-ep->blob_start()<< dendl;
+    dout(0) << "mydebug:select blob's logic_length = "<<ep->blob->get_blob().logical_length<< dendl;
   }else{
-    dout(0) << "mydebug: blob's logic_length = end!!!"<< dendl;
+    dout(0) << "mydebug:select blob's logic_length = end!!!"<< dendl;
   }
   
 
