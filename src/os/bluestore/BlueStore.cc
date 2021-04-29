@@ -2769,7 +2769,7 @@ BlueStore::extent_map_t::iterator BlueStore::ExtentMap::seek_lextent(
   uint64_t offset)
 {
   Extent dummy(offset);
-  auto fp = extent_map.lower_bound(dummy);
+  auto fp = extent_map.lower_bound(dummy);//返回第一个大于等于dummy的offset的lextent
   if (fp != extent_map.begin()) {
     --fp;
     if (fp->logical_end() <= offset) {
@@ -10033,6 +10033,7 @@ void BlueStore::_do_write_small(
   blp.copy(length, bl);
 
   auto max_bsize = std::max(wctx->target_blob_size, min_alloc_size);
+  //好像知道为什么一定要max了，主要是为了确定要搜索可复用的blob用的，扩大搜索的范围，保证整个数据块都能被搜索到
   auto min_off = offset >= max_bsize ? offset - max_bsize : 0;//可能是为了确定去哪个offset里找lextent？因为小于max_bsize的话和0这个offset所在lextent就一样了？
   uint32_t alloc_len = min_alloc_size;
   auto offset0 = P2ALIGN(offset, alloc_len);//找到这个offset属于哪个对象分片
@@ -10048,6 +10049,7 @@ void BlueStore::_do_write_small(
   // then check if blob can be reused via can_reuse_blob func or apply
   // direct/deferred write (the latter for extents including or higher
   // than 'offset' only).
+  //这一步感觉是把这部分的shard加载到内存中
   o->extent_map.fault_range(db, min_off, offset + max_bsize - min_off);
 
   // Look for an existing mutable blob we can use.
@@ -10060,6 +10062,9 @@ void BlueStore::_do_write_small(
       ++ep;
     }
   }
+
+  dout(0) << "mydebug: blob's logic_length="<<ep->blob->get_blob().get_logical_length()<< dendl;
+
   auto prev_ep = ep;
   if (prev_ep != begin) {
     --prev_ep;
