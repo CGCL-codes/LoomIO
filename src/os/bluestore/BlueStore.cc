@@ -10067,7 +10067,8 @@ void BlueStore::_do_write_small(
     dout(0) << "blob's logic_length = "<<temp->blob->get_blob().get_logical_length()<< dendl;
     dout(0) << "blob's pextents dump:"<< dendl;
     for(auto tempb=temp->blob->get_blob().get_extents().begin();tempb!=temp->blob->get_blob().get_extents().end();tempb++){
-      tempb->dump();
+      dout(0) << "pextent offset:"<<tempb->offset<< dendl;
+      dout(0) << "pextent length:"<<tempb->length<< dendl;
     }
     dout(0) << "------------------"<< dendl;
   }
