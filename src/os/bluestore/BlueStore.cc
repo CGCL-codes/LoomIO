@@ -10071,7 +10071,7 @@ uint32_t logical_offset = 0;      ///< logical offset
     dout(0) << "lextent length: "<<temp->length<< dendl;
     dout(0) << "lextent logical_offset: "<<temp->logical_offset<< dendl;
     dout(0) << "lextent blob_offset: "<<temp->blob_offset<< dendl;
-    dout(0) << "blob's logic_length = "<<ep->blob->get_blob().logical_length<< dendl;
+    dout(0) << "blob's logic_length = "<<temp->blob->get_blob().logical_length<< dendl;
     dout(0) << "blob's pextents dump:"<< dendl;
     for(auto tempb=temp->blob->get_blob().extents.begin();tempb!=temp->blob->get_blob().extents.end();tempb++){
       tempb->dump();
