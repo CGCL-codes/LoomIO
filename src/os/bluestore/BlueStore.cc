@@ -10064,7 +10064,7 @@ void BlueStore::_do_write_small(
     dout(0) << "lextent length: "<<temp->length<< dendl;
     dout(0) << "lextent logical_offset: "<<temp->logical_offset<< dendl;
     dout(0) << "lextent blob_offset: "<<temp->blob_offset<< dendl;
-    dout(0) << "blob's logic_length = "<<temp->blob->get_blob().logical_length<< dendl;
+    dout(0) << "blob's logic_length = "<<temp->blob->get_blob().get_logical_length()<< dendl;
     dout(0) << "blob's pextents dump:"<< dendl;
     for(auto tempb=temp->blob->get_blob().get_extents().begin();tempb!=temp->blob->get_blob().get_extents().end();tempb++){
       tempb->dump();
@@ -10081,7 +10081,7 @@ void BlueStore::_do_write_small(
   }
 
   if(ep!=end){
-    dout(0) << "mydebug:select blob's logic_length = "<<ep->blob->get_blob().logical_length<< dendl;
+    dout(0) << "mydebug:select blob's logic_length = "<<ep->blob->get_blob().get_logical_length()<< dendl;
   }else{
     dout(0) << "mydebug:select blob's logic_length = end!!!"<< dendl;
   }
