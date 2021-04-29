@@ -10063,7 +10063,7 @@ void BlueStore::_do_write_small(
     }
   }
 
-  dout(0) << "mydebug: blob's logic_length = "<<ep->blob->get_blob().get_logical_length()<< dendl;
+  dout(0) << "mydebug: blob's logic_length = "<<ep->blob_end()-ep->blob_start()<< dendl;
 
   auto prev_ep = ep;
   if (prev_ep != begin) {
