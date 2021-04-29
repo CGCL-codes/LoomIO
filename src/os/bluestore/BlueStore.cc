@@ -10053,15 +10053,8 @@ void BlueStore::_do_write_small(
   o->extent_map.fault_range(db, min_off, offset + max_bsize - min_off);
 
   // Look for an existing mutable blob we can use.
-
-uint32_t logical_offset = 0;      ///< logical offset
-    uint32_t blob_offset = 0;         ///< blob offset
-    uint32_t length = 0;              ///< length
-    BlobRef  blob; 
-
   auto begin = o->extent_map.extent_map.begin();
   auto end = o->extent_map.extent_map.end();
-
 
   //mydebug:for test
   dout(0) << "mydebug: object's lextents dump:"<< dendl;
