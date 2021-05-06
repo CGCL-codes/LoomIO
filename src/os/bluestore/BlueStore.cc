@@ -10057,35 +10057,39 @@ void BlueStore::_do_write_small(
   auto end = o->extent_map.extent_map.end();
 
   //mydebug:for test
-  dout(0) << "mydebug: object's lextents dump:"<< dendl;
-  for(auto temp=begin;temp!=end;temp++){
-    dout(0) << "------------------"<< dendl;
-    dout(0) << "lextent logical_offset: "<<temp->logical_offset<< dendl;
-    dout(0) << "lextent length: "<<temp->length<< dendl;
-    dout(0) << "lextent logical_offset: "<<temp->logical_offset<< dendl;
-    dout(0) << "lextent blob_offset: "<<temp->blob_offset<< dendl;
-    dout(0) << "blob's logic_length = "<<temp->blob->get_blob().get_logical_length()<< dendl;
-    dout(0) << "blob's pextents dump:"<< dendl;
-    for(auto tempb=temp->blob->get_blob().get_extents().begin();tempb!=temp->blob->get_blob().get_extents().end();tempb++){
-      dout(0) << "pextent offset:"<<tempb->offset<< dendl;
-      dout(0) << "pextent length:"<<tempb->length<< dendl;
-    }
-    dout(0) << "------------------"<< dendl;
-  }
+  // dout(0) << "mydebug: object's lextents dump:"<< dendl;
+  // for(auto temp=begin;temp!=end;temp++){
+  //   dout(0) << "------------------"<< dendl;
+  //   dout(0) << "lextent logical_offset: "<<temp->logical_offset<< dendl;
+  //   dout(0) << "lextent length: "<<temp->length<< dendl;
+  //   dout(0) << "lextent blob_offset: "<<temp->blob_offset<< dendl;
+  //   dout(0) << "blob's logic_length = "<<temp->blob->get_blob().get_logical_length()<< dendl;
+  //   dout(0) << "blob's pextents dump:"<< dendl;
+  //   for(auto tempb=temp->blob->get_blob().get_extents().begin();tempb!=temp->blob->get_blob().get_extents().end();tempb++){
+  //     dout(0) << "pextent offset:"<<tempb->offset<< dendl;
+  //     dout(0) << "pextent length:"<<tempb->length<< dendl;
+  //   }
+  //   dout(0) << "------------------"<< dendl;
+  // }
 
-  auto ep = o->extent_map.seek_lextent(offset);
-  if (ep != begin) {
+  auto ep = o->extent_map.seek_lextent(offset);//找到了offset所在的lextent
+  if(ep==end && ep!=begin){
+    dout(0) << "mydebug: offset has not shown yet!"<< dendl;
+  }
+  if (ep != begin) {//这个地方感觉就是如果之前的lextent所在的blob还有剩余位置的话，也就是之前的lextent所在的blob的大小还可以容纳这个offset
     --ep;
     if (ep->blob_end() <= offset) {
       ++ep;
+    } else{
+      dout(0) << "mydebug: find a blob that can be reused!"<< dendl;
     }
-  }
+  }//可能只是对返回的是end有效果，也就是之前这个offset还没有出现过
 
-  if(ep!=end){
-    dout(0) << "mydebug:select blob's logic_length = "<<ep->blob->get_blob().get_logical_length()<< dendl;
-  }else{
-    dout(0) << "mydebug:select blob's logic_length = end!!!"<< dendl;
-  }
+  // if(ep!=end){
+  //   dout(0) << "mydebug:select blob's logic_length = "<<ep->blob->get_blob().get_logical_length()<< dendl;
+  // }else{
+  //   dout(0) << "mydebug:select blob's logic_length = end!!!"<< dendl;
+  // }
   
 
   auto prev_ep = ep;
@@ -10098,7 +10102,8 @@ void BlueStore::_do_write_small(
   do {
     any_change = false;
 
-    if (ep != end && ep->logical_offset < offset + max_bsize) {
+    if (ep != end && ep->logical_offset < offset + max_bsize) {//如果该lextent不是空的，并且这个lextent的offset小于该请求的offset+blob的大小
+      //很奇怪，这个不是一定小于的嘛
       BlobRef b = ep->blob;
       auto bstart = ep->blob_start();
       dout(20) << __func__ << " considering " << *b
@@ -10296,7 +10301,9 @@ void BlueStore::_do_write_small(
       ++ep;
       any_change = true;
     } // if (ep != end && ep->logical_offset < offset + max_bsize)
-
+  else{
+    dout(0)<<"mydebug: offset larger!"<<dendl;
+  }
     // check extent for reuse in reverse order
     if (prev_ep != end && prev_ep->logical_offset >= min_off) {
       BlobRef b = prev_ep->blob;
