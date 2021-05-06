@@ -10104,17 +10104,18 @@ void BlueStore::_do_write_small(
 
     if (ep != end && ep->logical_offset < offset + max_bsize) {//如果该lextent不是空的，并且这个lextent的offset小于该请求的offset+blob的大小
       //很奇怪，这个不是一定小于的嘛
+      //居然还真的有不小于的，之后打印下看看是什么情况
       BlobRef b = ep->blob;
-      auto bstart = ep->blob_start();
+      auto bstart = ep->blob_start();//bstart是这个blob开始位置的对象偏移
       dout(20) << __func__ << " considering " << *b
 	       << " bstart 0x" << std::hex << bstart << std::dec << dendl;
-      if (bstart >= end_offs) {
-	dout(20) << __func__ << " ignoring distant " << *b << dendl;
+      if (bstart >= end_offs) { //如果bstart比要写的这个小块的结尾offset大
+	dout(0) << __func__ << " ignoring distant " << *b << dendl;
       } else if (!b->get_blob().is_mutable()) {
-	dout(20) << __func__ << " ignoring immutable " << *b << dendl;
+	dout(0) << __func__ << " ignoring immutable " << *b << dendl;
       } else if (ep->logical_offset % min_alloc_size !=
 		  ep->blob_offset % min_alloc_size) {
-	dout(20) << __func__ << " ignoring offset-skewed " << *b << dendl;
+	dout(0) << __func__ << " ignoring offset-skewed " << *b << dendl;
       } else {
 	uint64_t chunk_size = b->get_blob().get_chunk_size(block_size);
 	// can we pad our head/tail out with zeros?
