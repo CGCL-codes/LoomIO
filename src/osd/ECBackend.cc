@@ -1095,11 +1095,13 @@ void ECBackend::handle_sub_write_reply(
   map<ceph_tid_t, Op>::iterator i = tid_to_op_map.find(op.tid);
   assert(i != tid_to_op_map.end());
   
+  //mydebug
+  dout(0)<<"mydebug: #object:"<<i->second.hoid<<", osd:"<<from.osd<<", committed:"<<op.committed?1:0<<
+  ", applied:"<<op.applied?1:0<<
+  ", pending_commit:"<<i->second.pending_commit.size()<<
+  ", pending_apply:"<<i->second.pending_commit.size()<<" #"<<dendl;
+  
   if (op.committed) {
-    //mydebug
-    dout(0)<<"mydebug: #object:"<<i->second.hoid<<", osd:"<<from.osd<<", state:committed"<<
-    ", pending_commit:"<<i->second.pending_commit.size()<<
-    ", pending_apply:"<<i->second.pending_commit.size()<<" #"<<dendl;
     trace.event("sub write committed");
     assert(i->second.pending_commit.count(from));
     i->second.pending_commit.erase(from);
@@ -1108,10 +1110,6 @@ void ECBackend::handle_sub_write_reply(
     }
   }
   if (op.applied) {
-    //mydebug
-    dout(0)<<"mydebug: #object:"<<i->second.hoid<<", osd:"<<from.osd<<", state:applied"<<
-    ", pending_commit:"<<i->second.pending_commit.size()<<
-    ", pending_apply:"<<i->second.pending_commit.size()<<" #"<<dendl;
     trace.event("sub write applied");
     assert(i->second.pending_apply.count(from));
     i->second.pending_apply.erase(from);
