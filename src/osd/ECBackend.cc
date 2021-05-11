@@ -1096,8 +1096,8 @@ void ECBackend::handle_sub_write_reply(
   assert(i != tid_to_op_map.end());
   
   //mydebug
-  dout(0)<<"mydebug: #object:"<<i->second.hoid<<", osd:"<<from.osd<<", committed:"<<op.committed?"1":"0"<<
-  ", applied:"<<op.applied?"1":"0"<<", pending_commit:"<<i->second.pending_commit.size()<<
+  dout(0)<<"mydebug: #object:"<<i->second.hoid<<", osd:"<<from.osd<<", committed:"<<op.committed<<
+  ", applied:"<<op.applied<<", pending_commit:"<<i->second.pending_commit.size()<<
   ", pending_apply:"<<i->second.pending_commit.size()<<" #"<<dendl;
   
   if (op.committed) {
