@@ -1823,7 +1823,7 @@ void ECBackend::start_rmw(Op *op, PGTransactionUPtr &&t)
 
   dout(10) << __func__ << ": " << *op << dendl;
 
-  waiting_state.push_back(*op);
+  waiting_state.push_back(*op); //将op放入waiting_state队列
   check_ops();
 }
 
@@ -1831,14 +1831,15 @@ bool ECBackend::try_state_to_reads()
 {
   if (waiting_state.empty())
     return false;
-
-  Op *op = &(waiting_state.front());
+  //如果waiting_sate是空的，说明没有op需要去完成，就退出
+  Op *op = &(waiting_state.front()); //waiting_sate是一个Op为元素的list
   if (op->requires_rmw() && pipeline_state.cache_invalid()) {
     assert(get_parent()->get_pool().allows_ecoverwrites());
+    //这就是为什么之前设置pool的时候一定要设置allows_ecoverwrites属性
     dout(20) << __func__ << ": blocking " << *op
 	     << " because it requires an rmw and the cache is invalid "
 	     << pipeline_state
-	     << dendl;
+	     << dendl; //pipeline的state一定要有cache
     return false;
   }
 
@@ -1848,11 +1849,16 @@ bool ECBackend::try_state_to_reads()
     dout(20) << __func__ << ": invalidating cache after this op"
 	     << dendl;
     pipeline_state.invalidate();
+  }else{
+    dout(0) << __func__ << ": do not invalidate cache"
+	     << dendl;
   }
 
-  waiting_state.pop_front();
-  waiting_reads.push_back(*op);
+  waiting_state.pop_front(); //将该op从waiting_state队列中删除
+  waiting_reads.push_back(*op); //将该op加入waiting_reads队列
 
+  
+  //判断哪些是要从远程读的
   if (op->using_cache) {
     cache.open_write_pin(op->pin);
 
@@ -1884,10 +1890,12 @@ bool ECBackend::try_state_to_reads()
     op->remote_read = op->plan.to_read;
   }
 
-  dout(10) << __func__ << ": " << *op << dendl;
-
   if (!op->remote_read.empty()) {
     assert(get_parent()->get_pool().allows_ecoverwrites());
+    //mydebug
+    //probe read start time in rmw
+    //#object_id,tid,r_start,time#//
+    dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<"r_start"<<""<< *op << dendl;
     objects_read_async_no_cache(
       op->remote_read,
       [this, op](map<hobject_t,pair<int, extent_map> > &&results) {
@@ -1903,13 +1911,13 @@ bool ECBackend::try_state_to_reads()
 
 bool ECBackend::try_reads_to_commit()
 {
-  if (waiting_reads.empty())
+  if (waiting_reads.empty()) //在statetoreads中已经把请求放入waiting_reads队列中了
     return false;
   Op *op = &(waiting_reads.front());
-  if (op->read_in_progress())
+  if (op->read_in_progress()) //!remote_read.empty() && remote_read_result.empty();如果需要从远程读，并且result还是空的
     return false;
-  waiting_reads.pop_front();
-  waiting_commit.push_back(*op);
+  waiting_reads.pop_front();//到这一步说明已经读完了，就把waiting_reads的给放出来
+  waiting_commit.push_back(*op);//放入waiting_commit队列中
 
   dout(10) << __func__ << ": starting commit on " << *op << dendl;
   dout(20) << __func__ << ": " << cache << dendl;
@@ -1917,7 +1925,7 @@ bool ECBackend::try_reads_to_commit()
   get_parent()->apply_stats(
     op->hoid,
     op->delta_stats);
-
+  //pending_read应该就是remote_read的补集
   if (op->using_cache) {
     for (auto &&hpair: op->pending_read) {
       op->remote_read_result[hpair.first].insert(
@@ -1925,23 +1933,24 @@ bool ECBackend::try_reads_to_commit()
 	  hpair.first,
 	  op->pin,
 	  hpair.second));
-    }
-    op->pending_read.clear();
+    }//从cache中把pending_read的部分插入remote_read_result中，这样所有的结果都在remote_result里了
+    op->pending_read.clear();//这时候就可以清理pending_read了
   } else {
-    assert(op->pending_read.empty());
+    assert(op->pending_read.empty());//如果不用cache，说明所有的都要从远程读，pending_read就一定是empty的了
   }
 
+  //开始准备发送给各个shard的trans
   map<shard_id_t, ObjectStore::Transaction> trans;
   for (set<pg_shard_t>::const_iterator i =
 	 get_parent()->get_actingbackfill_shards().begin();
        i != get_parent()->get_actingbackfill_shards().end();
        ++i) {
-    trans[i->shard];
+    trans[i->shard];//对于map来说，这样可以初始化一下
   }
 
   op->trace.event("start ec write");
 
-  map<hobject_t,extent_map> written;
+  map<hobject_t,extent_map> written;//这个应该是寸将要写入的数据的
   if (op->plan.t) {
     ECTransaction::generate_transactions(
       op->plan,
@@ -1962,7 +1971,7 @@ bool ECBackend::try_reads_to_commit()
   dout(20) << __func__ << ": written: " << written << dendl;
   dout(20) << __func__ << ": op: " << *op << dendl;
 
-  if (!get_parent()->get_pool().allows_ecoverwrites()) {
+  if (!get_parent()->get_pool().allows_ecoverwrites()) {//这个基本不会触发
     for (auto &&i: op->log_entries) {
       if (i.requires_kraken()) {
 	derr << __func__ << ": log entry " << i << " requires kraken"
@@ -1974,7 +1983,7 @@ bool ECBackend::try_reads_to_commit()
 
   map<hobject_t,extent_set> written_set;
   for (auto &&i: written) {
-    written_set[i.first] = i.second.get_interval_set();
+    written_set[i.first] = i.second.get_interval_set();//就是把map里面的offset和len放入set里面
   }
   dout(20) << __func__ << ": written_set: " << written_set << dendl;
   assert(written_set == op->plan.will_write);
@@ -1982,11 +1991,11 @@ bool ECBackend::try_reads_to_commit()
   if (op->using_cache) {
     for (auto &&hpair: written) {
       dout(20) << __func__ << ": " << hpair << dendl;
-      cache.present_rmw_update(hpair.first, op->pin, hpair.second);
+      cache.present_rmw_update(hpair.first, op->pin, hpair.second);//更新cache中的内容为新写的内容
     }
   }
   op->remote_read.clear();
-  op->remote_read_result.clear();
+  op->remote_read_result.clear();//该写的已经写入written_set中了，可以把remote_read这些删掉了
 
   dout(10) << "onreadable_sync: " << op->on_local_applied_sync << dendl;
   ObjectStore::Transaction empty;
@@ -1996,7 +2005,7 @@ bool ECBackend::try_reads_to_commit()
 	 get_parent()->get_actingbackfill_shards().begin();
        i != get_parent()->get_actingbackfill_shards().end();
        ++i) {
-    op->pending_apply.insert(*i);
+    op->pending_apply.insert(*i);//这一步初始化pending_apply和pending_commit
     op->pending_commit.insert(*i);
     map<shard_id_t, ObjectStore::Transaction>::iterator iter =
       trans.find(i->shard);
@@ -2013,7 +2022,7 @@ bool ECBackend::try_reads_to_commit()
       op->reqid,
       op->hoid,
       stats,
-      should_send ? iter->second : empty,
+      should_send ? iter->second : empty,//这一行是transaction，如果不应该发送就empty
       op->version,
       op->trim_to,
       op->roll_forward_to,
@@ -2030,9 +2039,9 @@ bool ECBackend::try_reads_to_commit()
       trace.keyval("shard", i->shard.id);
     }
 
-    if (*i == get_parent()->whoami_shard()) {
+    if (*i == get_parent()->whoami_shard()) {//如果是发给自己的话
       should_write_local = true;
-      local_write_op.claim(sop);
+      local_write_op.claim(sop); //claim跟直接拷贝差不多
     } else {
       MOSDECSubOpWrite *r = new MOSDECSubOpWrite(sop);
       r->pgid = spg_t(get_parent()->primary_spg_t().pgid, i->shard);
@@ -2040,10 +2049,10 @@ bool ECBackend::try_reads_to_commit()
       r->min_epoch = get_parent()->get_interval_start_epoch();
       r->trace = trace;
       get_parent()->send_message_osd_cluster(
-	i->osd, r, get_parent()->get_epoch());
+	i->osd, r, get_parent()->get_epoch());//这一步就把写transaction发送了
     }
-  }
-  if (should_write_local) {
+  }//全部发送完了
+  if (should_write_local) {//这部分是写自己的
       handle_sub_write(
 	get_parent()->whoami_shard(),
 	op->client_op,
@@ -2057,17 +2066,18 @@ bool ECBackend::try_reads_to_commit()
        i != op->on_write.end();
        op->on_write.erase(i++)) {
     (*i)();
-  }
+  }//这一步暂时不知道有什么用
+
 
   return true;
 }
 
 bool ECBackend::try_finish_rmw()
 {
-  if (waiting_commit.empty())
+  if (waiting_commit.empty())//承接上一步，处理waiting_commit队列中的内容
     return false;
   Op *op = &(waiting_commit.front());
-  if (op->write_in_progress())
+  if (op->write_in_progress())//如果return了false，会到check_ops的while循环也会一直等到pending_commit和pending_apply都完成的
     return false;
   waiting_commit.pop_front();
 
@@ -2096,9 +2106,9 @@ bool ECBackend::try_finish_rmw()
   }
 
   if (op->using_cache) {
-    cache.release_write_pin(op->pin);
+    cache.release_write_pin(op->pin);//把cache剔除，不过下一次读就用不到了？
   }
-  tid_to_op_map.erase(op->tid);
+  tid_to_op_map.erase(op->tid);//transaction也完成了
 
   if (waiting_reads.empty() &&
       waiting_commit.empty()) {
@@ -2107,7 +2117,8 @@ bool ECBackend::try_finish_rmw()
 	     << pipeline_state
 	     << dendl;
   }
-  return true;
+  //这个函数主要是清楚一些状态
+  return true;//这三个函数最后一定都会返回true以让while继续执行
 }
 
 void ECBackend::check_ops()

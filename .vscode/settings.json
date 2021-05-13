@@ -4,6 +4,12 @@
         "ostream": "cpp",
         "*.ipp": "cpp",
         "*.tcc": "cpp",
-        "rope": "cpp"
+        "rope": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "optional": "cpp"
     }
 }

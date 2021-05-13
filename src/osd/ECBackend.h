@@ -189,7 +189,7 @@ public:
     const map<hobject_t,extent_set> &to_read,
     Func &&on_complete) {
     map<hobject_t,std::list<boost::tuple<uint64_t, uint64_t, uint32_t> > > _to_read;
-    for (auto &&hpair: to_read) {
+    for (auto &&hpair: to_read) {//填充_to_read
       auto &l = _to_read[hpair.first];
       for (auto extent: hpair.second) {
 	l.emplace_back(extent.first, extent.second, 0);
