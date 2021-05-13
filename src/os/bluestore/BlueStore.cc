@@ -10021,7 +10021,7 @@ void BlueStore::_do_write_small(
     bufferlist::iterator& blp,
     WriteContext *wctx)
 {
-  dout(0) << __func__ << " 0x" << std::hex << offset << "~" << length
+  dout(10) << __func__ << " 0x" << std::hex << offset << "~" << length
 	   << std::dec << dendl; //change 10->0
   assert(length < min_alloc_size);
   uint64_t end_offs = offset + length;
@@ -10038,7 +10038,7 @@ void BlueStore::_do_write_small(
   uint32_t alloc_len = min_alloc_size;
   auto offset0 = P2ALIGN(offset, alloc_len);//找到这个offset属于哪个对象分片
 
-  dout(0) << "mydebug: target_blob_size="<<wctx->target_blob_size<<", min_alloc_size="
+  dout(10) << "mydebug: target_blob_size="<<wctx->target_blob_size<<", min_alloc_size="
   <<min_alloc_size<<", max_bsize="<<max_bsize<<", min_off="<<min_off<<",offset="<<offset<<",offset0="<<offset0<< dendl;
 
 
@@ -10074,14 +10074,14 @@ void BlueStore::_do_write_small(
 
   auto ep = o->extent_map.seek_lextent(offset);//找到了offset所在的lextent
   if(ep==end && ep!=begin){
-    dout(0) << "mydebug: offset has not shown yet!"<< dendl;
+    dout(10) << "mydebug: offset has not shown yet!"<< dendl;
   }
   if (ep != begin) {//这个地方感觉就是如果之前的lextent所在的blob还有剩余位置的话，也就是之前的lextent所在的blob的大小还可以容纳这个offset
     --ep;
     if (ep->blob_end() <= offset) {
       ++ep;
     } else{
-      dout(0) << "mydebug: find a blob that can be reused!"<< dendl;
+      dout(10) << "mydebug: find a blob that can be reused!"<< dendl;
     }
   }//可能只是对返回的是end有效果，也就是之前这个offset还没有出现过
 
@@ -10303,7 +10303,7 @@ void BlueStore::_do_write_small(
       any_change = true;
     } // if (ep != end && ep->logical_offset < offset + max_bsize)
   else{
-    dout(0)<<"mydebug: offset larger!"<<dendl;
+    dout(10)<<"mydebug: offset larger!"<<dendl;
   }
     // check extent for reuse in reverse order
     if (prev_ep != end && prev_ep->logical_offset >= min_off) {
