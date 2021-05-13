@@ -1894,8 +1894,9 @@ bool ECBackend::try_state_to_reads()
     assert(get_parent()->get_pool().allows_ecoverwrites());
     //mydebug
     //probe read start time in rmw
-    //#object_id,tid,r_start,time#//
-    dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<"r_start"<<""<< *op << dendl;
+    //#object_id,tid,r_start,time#
+    utime_t r_start_time = ceph_clock_now();
+    dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",r_start"<<","<<r_start_time.to_nsec()<<"#"<< dendl;
     objects_read_async_no_cache(
       op->remote_read,
       [this, op](map<hobject_t,pair<int, extent_map> > &&results) {
