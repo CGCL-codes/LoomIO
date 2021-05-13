@@ -1850,7 +1850,7 @@ bool ECBackend::try_state_to_reads()
 	     << dendl;
     pipeline_state.invalidate();
   }else{
-    dout(0) << __func__ << ": do not invalidate cache"
+    dout(20) << __func__ << ": do not invalidate cache"
 	     << dendl;
   }
 
@@ -1905,6 +1905,8 @@ bool ECBackend::try_state_to_reads()
 	}
 	check_ops();
       });
+  }else{
+    dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",r_start"<<",0#"<< dendl;
   }
 
   return true;
