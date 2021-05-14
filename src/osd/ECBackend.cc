@@ -1919,11 +1919,17 @@ bool ECBackend::try_reads_to_commit()
   Op *op = &(waiting_reads.front());
   if (op->read_in_progress()) //!remote_read.empty() && remote_read_result.empty();如果需要从远程读，并且result还是空的
     return false;
+
+  utime_t r_end_time = ceph_clock_now();
+  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",r_end"<<","<<r_end_time.to_nsec()<<"#"<< dendl;
   waiting_reads.pop_front();//到这一步说明已经读完了，就把waiting_reads的给放出来
   waiting_commit.push_back(*op);//放入waiting_commit队列中
 
   dout(10) << __func__ << ": starting commit on " << *op << dendl;
   dout(20) << __func__ << ": " << cache << dendl;
+
+  utime_t m_start_time = ceph_clock_now();
+  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",m_start"<<","<<m_start_time.to_nsec()<<"#"<< dendl;
 
   get_parent()->apply_stats(
     op->hoid,
@@ -2000,6 +2006,9 @@ bool ECBackend::try_reads_to_commit()
   op->remote_read.clear();
   op->remote_read_result.clear();//该写的已经写入written_set中了，可以把remote_read这些删掉了
 
+  utime_t m_end_time = ceph_clock_now();
+  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",m_end"<<","<<m_end_time.to_nsec()<<"#"<< dendl;
+
   dout(10) << "onreadable_sync: " << op->on_local_applied_sync << dendl;
   ObjectStore::Transaction empty;
   bool should_write_local = false;
@@ -2055,6 +2064,8 @@ bool ECBackend::try_reads_to_commit()
 	i->osd, r, get_parent()->get_epoch());//这一步就把写transaction发送了
     }
   }//全部发送完了
+  utime_t w_start_time = ceph_clock_now();
+  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",w_start"<<","<<w_start_time.to_nsec()<<"#"<< dendl;
   if (should_write_local) {//这部分是写自己的
       handle_sub_write(
 	get_parent()->whoami_shard(),
@@ -2082,6 +2093,9 @@ bool ECBackend::try_finish_rmw()
   Op *op = &(waiting_commit.front());
   if (op->write_in_progress())//如果return了false，会到check_ops的while循环也会一直等到pending_commit和pending_apply都完成的
     return false;
+  
+  utime_t w_end_time = ceph_clock_now();
+  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",w_end"<<","<<w_end_time.to_nsec()<<"#"<< dendl;
   waiting_commit.pop_front();
 
   dout(10) << __func__ << ": " << *op << dendl;
