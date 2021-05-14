@@ -1896,7 +1896,7 @@ bool ECBackend::try_state_to_reads()
     //probe read start time in rmw
     //#object_id,tid,r_start,time#
     utime_t r_start_time = ceph_clock_now();
-    dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",r_start"<<","<<r_start_time.to_nsec()<<"#"<< dendl;
+    dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",r_start"<<","<<r_start_time.to_nsec()<<"#"<< dendl;
     objects_read_async_no_cache(
       op->remote_read,
       [this, op](map<hobject_t,pair<int, extent_map> > &&results) {
@@ -1906,7 +1906,7 @@ bool ECBackend::try_state_to_reads()
 	check_ops();
       });
   }else{
-    dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",r_start"<<",0#"<< dendl;
+    dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",r_start"<<",0#"<< dendl;
   }
 
   return true;
@@ -1921,7 +1921,7 @@ bool ECBackend::try_reads_to_commit()
     return false;
 
   utime_t r_end_time = ceph_clock_now();
-  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",r_end"<<","<<r_end_time.to_nsec()<<"#"<< dendl;
+  dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",r_end"<<","<<r_end_time.to_nsec()<<"#"<< dendl;
   waiting_reads.pop_front();//到这一步说明已经读完了，就把waiting_reads的给放出来
   waiting_commit.push_back(*op);//放入waiting_commit队列中
 
@@ -1929,7 +1929,7 @@ bool ECBackend::try_reads_to_commit()
   dout(20) << __func__ << ": " << cache << dendl;
 
   utime_t m_start_time = ceph_clock_now();
-  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",m_start"<<","<<m_start_time.to_nsec()<<"#"<< dendl;
+  dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",m_start"<<","<<m_start_time.to_nsec()<<"#"<< dendl;
 
   get_parent()->apply_stats(
     op->hoid,
@@ -2007,7 +2007,7 @@ bool ECBackend::try_reads_to_commit()
   op->remote_read_result.clear();//该写的已经写入written_set中了，可以把remote_read这些删掉了
 
   utime_t m_end_time = ceph_clock_now();
-  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",m_end"<<","<<m_end_time.to_nsec()<<"#"<< dendl;
+  dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",m_end"<<","<<m_end_time.to_nsec()<<"#"<< dendl;
 
   dout(10) << "onreadable_sync: " << op->on_local_applied_sync << dendl;
   ObjectStore::Transaction empty;
@@ -2065,7 +2065,7 @@ bool ECBackend::try_reads_to_commit()
     }
   }//全部发送完了
   utime_t w_start_time = ceph_clock_now();
-  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",w_start"<<","<<w_start_time.to_nsec()<<"#"<< dendl;
+  dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",w_start"<<","<<w_start_time.to_nsec()<<"#"<< dendl;
   if (should_write_local) {//这部分是写自己的
       handle_sub_write(
 	get_parent()->whoami_shard(),
@@ -2095,7 +2095,7 @@ bool ECBackend::try_finish_rmw()
     return false;
   
   utime_t w_end_time = ceph_clock_now();
-  dout(0) << "mydebug:#"<<op->hoid<<","<<op->tid<<",w_end"<<","<<w_end_time.to_nsec()<<"#"<< dendl;
+  dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",w_end"<<","<<w_end_time.to_nsec()<<"#"<< dendl;
   waiting_commit.pop_front();
 
   dout(10) << __func__ << ": " << *op << dendl;
