@@ -1100,6 +1100,8 @@ void ECBackend::handle_sub_write_reply(
   ", applied:"<<op.applied<<", pending_commit:"<<i->second.pending_commit.size()<<
   ", pending_apply:"<<i->second.pending_commit.size()<<" #"<<dendl;
   
+  utime_t sub_w_end_time = ceph_clock_now();
+
   if (op.committed) {
     trace.event("sub write committed");
     assert(i->second.pending_commit.count(from));
@@ -1112,6 +1114,7 @@ void ECBackend::handle_sub_write_reply(
     trace.event("sub write applied");
     assert(i->second.pending_apply.count(from));
     i->second.pending_apply.erase(from);
+    dout(0) << "mydebug:rmw_info#"<<i->second.hoid<<","<<i->second.tid<<",sub_w_end"<<","<<sub_w_end_time.to_nsec()<<"#"<< dendl;
   }
 
   if (i->second.pending_apply.empty() && i->second.on_all_applied) {
