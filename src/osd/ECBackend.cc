@@ -1902,6 +1902,7 @@ bool ECBackend::try_state_to_reads()
       [this, op](map<hobject_t,pair<int, extent_map> > &&results) {
 	for (auto &&i: results) {
 	  op->remote_read_result.emplace(i.first, i.second.second);
+    dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",read complete"<<",0#"<< dendl;
 	}
 	check_ops();
       });
