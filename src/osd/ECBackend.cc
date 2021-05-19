@@ -1262,6 +1262,13 @@ void ECBackend::handle_sub_read_reply(
       }
     }
   }
+
+  map<ceph_tid_t, ReadOp>::iterator my_iter = tid_to_read_map.find(rop.tid);
+  if(my_iter!=tid_to_read_map.end()){
+    utime_t sub_r_end_time = ceph_clock_now();
+    dout(0) << "mydebug:rmw_info#"<<my_iter->hoid<<","<<my_iter->tid<<",sub_r_end"<<","<<sub_r_end_time.to_nsec()<<"#"<< dendl;
+  }
+  
   if (rop.in_progress.empty() || is_complete == rop.complete.size()) {
     dout(20) << __func__ << " Complete: " << rop << dendl;
     rop.trace.event("ec read complete");
