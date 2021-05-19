@@ -1263,12 +1263,12 @@ void ECBackend::handle_sub_read_reply(
     }
   }
 
-  map<ceph_tid_t, Op>::iterator my_iter = tid_to_op_map.find(rop.tid);
-  if(my_iter!=tid_to_op_map.end()){
+  Op *op = &(waiting_reads.front());
+  if(op->read_in_progress()){
     utime_t sub_r_end_time = ceph_clock_now();
-    dout(0) << "mydebug:rmw_info#"<<my_iter->second.hoid<<","<<my_iter->second.tid<<",sub_r_end"<<","<<sub_r_end_time.to_nsec()<<"#"<< dendl;
+    dout(0) << "mydebug:rmw_info#"<op->hoid<<","<<op->tid<<",sub_r_end"<<","<<sub_r_end_time.to_nsec()<<"#"<< dendl;
   }else{
-    dout(0)<<"can not find tid!, size="<<waiting_reads.size()<<dendl;
+    dout(0)<<"not in read progress"<<dendl;
   }
   
   if (rop.in_progress.empty() || is_complete == rop.complete.size()) {
