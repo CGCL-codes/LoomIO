@@ -1266,7 +1266,7 @@ void ECBackend::handle_sub_read_reply(
   Op *op = &(waiting_reads.front());
   if(op->read_in_progress()){
     utime_t sub_r_end_time = ceph_clock_now();
-    dout(0) << "mydebug:rmw_info#"<op->hoid<<","<<op->tid<<",sub_r_end"<<","<<sub_r_end_time.to_nsec()<<"#"<< dendl;
+    dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",sub_r_end"<<","<<sub_r_end_time.to_nsec()<<"#"<< dendl;
   }else{
     dout(0)<<"not in read progress"<<dendl;
   }
