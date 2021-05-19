@@ -1267,6 +1267,8 @@ void ECBackend::handle_sub_read_reply(
   if(my_iter!=tid_to_op_map.end()){
     utime_t sub_r_end_time = ceph_clock_now();
     dout(0) << "mydebug:rmw_info#"<<my_iter->second.hoid<<","<<my_iter->second.tid<<",sub_r_end"<<","<<sub_r_end_time.to_nsec()<<"#"<< dendl;
+  }else{
+    dout(0)<<"can not find tid!"<<dendl;
   }
   
   if (rop.in_progress.empty() || is_complete == rop.complete.size()) {
