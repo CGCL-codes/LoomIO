@@ -2498,7 +2498,7 @@ void PrimaryLogPG::record_write_error(OpRequestRef op, const hobject_t &soid,
 				flags, true);
       }
       ldpp_dout(pg, 10) << " sending commit on " << *m << " " << reply << dendl;
-      dout(0) << "mydebug:send back in ppG.cc:2501"<< dendl;
+      ldpp_dout(pg, 0) << "mydebug:send back in ppG.cc:2501"<< dendl;
       pg->osd->send_message_osd_client(reply, m->get_connection());
     }
   };
