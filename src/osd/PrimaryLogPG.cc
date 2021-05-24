@@ -3445,7 +3445,7 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
 	}
 	reply->add_flags(CEPH_OSD_FLAG_ACK | CEPH_OSD_FLAG_ONDISK);
 	dout(10) << " sending reply on " << *m << " " << reply << dendl;
-  dout(0) << "mydebug:send back in ppG.cc:3444"<<"hoid:"<<ctx->obc->obs.oi.soid<<"tid:"<<rep_tid<< dendl;
+  dout(0) << "mydebug:send back in ppG.cc:3444"<<"hoid:"<<ctx->obc->obs.oi.soid<<","<<rep_tid<< dendl;
 	osd->send_message_osd_client(reply, m->get_connection());
 	ctx->sent_reply = true;
 	ctx->op->mark_commit_sent();
