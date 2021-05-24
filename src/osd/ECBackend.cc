@@ -1875,6 +1875,8 @@ bool ECBackend::try_state_to_reads()
   
   //判断哪些是要从远程读的
   if (op->using_cache) {
+    dout(0) << __func__ << "mydebug:op->using_cache"
+	     << dendl;
     cache.open_write_pin(op->pin);
 
     extent_set empty;
@@ -1902,6 +1904,8 @@ bool ECBackend::try_state_to_reads()
       }
     }
   } else {
+    dout(0) << __func__ << "mydebug:not_using cache"
+	     << dendl;
     op->remote_read = op->plan.to_read;
   }
 
