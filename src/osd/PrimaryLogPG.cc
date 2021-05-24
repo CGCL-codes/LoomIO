@@ -3447,7 +3447,8 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
 	dout(10) << " sending reply on " << *m << " " << reply << dendl;
   utime_t w_sent_time = ceph_clock_now();
   dout(0) << "mydebug:rmw_info#"<<ctx->obc->obs.oi.soid<<","<<rep_tid<<",w_sent"<<","<<w_sent_time.to_nsec()<<"#"<< dendl;
-	osd->send_message_osd_client(reply, m->get_connection());
+	
+  osd->send_message_osd_client(reply, m->get_connection());
 	ctx->sent_reply = true;
 	ctx->op->mark_commit_sent();
       }
