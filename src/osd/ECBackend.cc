@@ -1875,7 +1875,7 @@ bool ECBackend::try_state_to_reads()
   
   //判断哪些是要从远程读的
   if (op->using_cache) {
-    dout(0) << __func__ << "mydebug:op->using_cache"
+    dout(20) << __func__ << "mydebug:op->using_cache"
 	     << dendl;
     cache.open_write_pin(op->pin);
 
@@ -1904,7 +1904,7 @@ bool ECBackend::try_state_to_reads()
       }
     }
   } else {
-    dout(0) << __func__ << "mydebug:not_using cache"
+    dout(20) << __func__ << "mydebug:not_using cache"
 	     << dendl;
     op->remote_read = op->plan.to_read;
   }
@@ -1921,7 +1921,7 @@ bool ECBackend::try_state_to_reads()
       [this, op](map<hobject_t,pair<int, extent_map> > &&results) {
 	for (auto &&i: results) {
 	  op->remote_read_result.emplace(i.first, i.second.second);
-    dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",read complete"<<",0#"<< dendl;
+    //dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",read complete"<<",0#"<< dendl;
 	}
 	check_ops();
       });
