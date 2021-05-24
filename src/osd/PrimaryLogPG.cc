@@ -3424,8 +3424,12 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
 
   // no need to capture PG ref, repop cancel will handle that
   // Can capture the ctx by pointer, it's owned by the repop
+
+  // issue replica writes
+  ceph_tid_t rep_tid = osd->get_tid();
+
   ctx->register_on_commit(
-    [m, ctx, this](){
+    [rep_tid, m, ctx, this](){
       if (ctx->op)
 	log_op_stats(
 	  ctx);
@@ -3441,7 +3445,7 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
 	}
 	reply->add_flags(CEPH_OSD_FLAG_ACK | CEPH_OSD_FLAG_ONDISK);
 	dout(10) << " sending reply on " << *m << " " << reply << dendl;
-  dout(0) << "mydebug:send back in ppG.cc:3444"<< dendl;
+  dout(0) << "mydebug:send back in ppG.cc:3444"<<"hoid:"<<ctx->obc->obs.oi.soid<<"tid:"<<rep_tid<< dendl;
 	osd->send_message_osd_client(reply, m->get_connection());
 	ctx->sent_reply = true;
 	ctx->op->mark_commit_sent();
@@ -3459,8 +3463,6 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
       delete ctx;
     });
 
-  // issue replica writes
-  ceph_tid_t rep_tid = osd->get_tid();
 
   RepGather *repop = new_repop(ctx, obc, rep_tid);
 
@@ -9430,7 +9432,7 @@ void PrimaryLogPG::eval_repop(RepGather *repop)
   // ondisk?
   if (repop->all_committed) {
     dout(10) << " commit: " << *repop << dendl;
-    dout(0) << "mydebug: all committed: "<< dendl;
+    dout(10) << "mydebug: all committed: "<< dendl;
     for (auto p = repop->on_committed.begin();
 	 p != repop->on_committed.end();
 	 repop->on_committed.erase(p++)) {
