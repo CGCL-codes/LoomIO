@@ -32,6 +32,10 @@
 struct OpRequest : public TrackedOp {
   friend class OpTracker;
 
+  //mydebug
+  hobject_t hoid;
+  ceph_tid_t tid;
+
   // rmw flags
   int rmw_flags;
 

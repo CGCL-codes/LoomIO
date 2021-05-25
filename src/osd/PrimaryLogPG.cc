@@ -3427,6 +3427,9 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
 
   // issue replica writes
   ceph_tid_t rep_tid = osd->get_tid();
+  //mydebug
+  ctx->op->hoid = ctx->obc->obs.oi.soid;
+  ctx->op->hoid->tid = rep_tid;
 
   ctx->register_on_commit(
     [rep_tid, m, ctx, this](){

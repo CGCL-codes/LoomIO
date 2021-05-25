@@ -1916,6 +1916,10 @@ bool ECBackend::try_state_to_reads()
     //#object_id,tid,r_start,time#
     utime_t r_start_time = ceph_clock_now();
     dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",r_start"<<","<<r_start_time.to_nsec()<<"#"<< dendl;
+    if(op->client_op!=NULL){
+       dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
+    }
+   
     objects_read_async_no_cache(
       op->remote_read,
       [this, op](map<hobject_t,pair<int, extent_map> > &&results) {
