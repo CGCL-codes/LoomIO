@@ -2153,7 +2153,7 @@ bool ECBackend::try_finish_rmw()
     //dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
     if(op->client_op->hoid==op->hoid&&op->client_op->tid==op->tid){
       op->client_op->mark_w_end();
-      dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",w_time_total_read"<<","<<ctx->op->get_w_time_real()<<"#"<< dendl;
+      dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",w_time_total_read"<<","<<op->client_op->get_w_time_real()<<"#"<< dendl;
 
     }else{
       dout(0)<<"mismatch"<<dendl;
