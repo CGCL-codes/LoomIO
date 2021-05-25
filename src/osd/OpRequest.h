@@ -101,6 +101,7 @@ private:
   utime_t r_end_time;
   utime_t w_start_time;
   utime_t w_end_time;
+  utime_t queued_time;
 
   static const uint8_t flag_queued_for_pg=1 << 0;
   static const uint8_t flag_reached_pg =  1 << 1;
@@ -154,6 +155,7 @@ public:
 
   void mark_queued_for_pg() {
     mark_flag_point(flag_queued_for_pg, "queued_for_pg");
+    queued_time = ceph_clock_now();
   }
   void mark_reached_pg() {
     mark_flag_point(flag_reached_pg, "reached_pg");
@@ -205,7 +207,7 @@ public:
   }
 
   uint64_t get_total_time() const {
-    return (commit_sent_time.to_nsec()-started_time.to_nsec());
+    return (commit_sent_time.to_nsec()-queued_time.to_nsec());
   }
 
   utime_t get_dequeued_time() const {
