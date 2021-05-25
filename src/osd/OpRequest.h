@@ -97,6 +97,10 @@ private:
   //mydebug
   utime_t started_time;
   utime_t commit_sent_time;
+  utime_t r_start_time;
+  utime_t r_end_time;
+  utime_t w_start_time;
+  utime_t w_end_time;
 
   static const uint8_t flag_queued_for_pg=1 << 0;
   static const uint8_t flag_reached_pg =  1 << 1;
@@ -167,6 +171,30 @@ public:
   void mark_commit_sent() {
     mark_flag_point(flag_commit_sent, "commit_sent");
     commit_sent_time = ceph_clock_now();
+  }
+
+  void mark_r_start() {
+    r_start_time = ceph_clock_now();
+  }
+
+  void mark_r_end() {
+    r_end_time = ceph_clock_now();
+  }
+
+  void mark_w_start() {
+    w_start_time = ceph_clock_now();
+  }
+
+  void mark_w_end() {
+    w_end_time = ceph_clock_now();
+  }
+
+  uint64_t get_r_time() const {
+    return (r_end_time.to_nsec()-r_start_time.to_nsec());
+  }
+
+  uint64_t get_w_time() const {
+    return (w_end_time.to_nsec()-w_start_time.to_nsec());
   }
 
   uint64_t get_total_time() const {

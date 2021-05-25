@@ -3455,6 +3455,8 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
 	ctx->sent_reply = true;
 	ctx->op->mark_commit_sent();
   dout(0) << "mydebug:rmw_info#"<<ctx->obc->obs.oi.soid<<","<<rep_tid<<",w_total"<<","<<ctx->op->get_total_time()<<"#"<< dendl;
+  dout(0) << "mydebug:rmw_info#"<<ctx->obc->obs.oi.soid<<","<<rep_tid<<",r_time_total"<<","<<ctx->op->get_r_time()<<"#"<< dendl;
+  dout(0) << "mydebug:rmw_info#"<<ctx->obc->obs.oi.soid<<","<<rep_tid<<",w_time_total"<<","<<ctx->op->get_w_time()<<"#"<< dendl;
       }
     });
   ctx->register_on_success(

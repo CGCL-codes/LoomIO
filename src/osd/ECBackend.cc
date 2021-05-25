@@ -1909,6 +1909,18 @@ bool ECBackend::try_state_to_reads()
     op->remote_read = op->plan.to_read;
   }
 
+
+  if(op->client_op!=NULL){
+    //dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
+    if(op->client_op->hoid==op->hoid&&op->client_op->tid==op->tid){
+      op->client_op->mark_r_start();
+    }else{
+      dout(0)<<"mismatch"<<dendl;
+    }
+  }else{
+    dout(0)<<"null client_op"<<dendl;
+  }
+
   if (!op->remote_read.empty()) {
     assert(get_parent()->get_pool().allows_ecoverwrites());
     //mydebug
@@ -1916,9 +1928,6 @@ bool ECBackend::try_state_to_reads()
     //#object_id,tid,r_start,time#
     utime_t r_start_time = ceph_clock_now();
     dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",r_start"<<","<<r_start_time.to_nsec()<<"#"<< dendl;
-    if(op->client_op!=NULL){
-       dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
-    }
    
     objects_read_async_no_cache(
       op->remote_read,
@@ -1943,6 +1952,17 @@ bool ECBackend::try_reads_to_commit()
   Op *op = &(waiting_reads.front());
   if (op->read_in_progress()) //!remote_read.empty() && remote_read_result.empty();如果需要从远程读，并且result还是空的
     return false;
+
+  if(op->client_op!=NULL){
+    //dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
+    if(op->client_op->hoid==op->hoid&&op->client_op->tid==op->tid){
+      op->client_op->mark_r_end();
+    }else{
+      dout(0)<<"mismatch"<<dendl;
+    }
+  }else{
+    dout(0)<<"null client_op"<<dendl;
+  }
 
   utime_t r_end_time = ceph_clock_now();
   dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",r_end"<<","<<r_end_time.to_nsec()<<"#"<< dendl;
@@ -2088,6 +2108,17 @@ bool ECBackend::try_reads_to_commit()
 	i->osd, r, get_parent()->get_epoch());//这一步就把写transaction发送了
     }
   }//全部发送完了
+  if(op->client_op!=NULL){
+    //dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
+    if(op->client_op->hoid==op->hoid&&op->client_op->tid==op->tid){
+      op->client_op->mark_w_start();
+    }else{
+      dout(0)<<"mismatch"<<dendl;
+    }
+  }else{
+    dout(0)<<"null client_op"<<dendl;
+  }
+
   utime_t w_start_time = ceph_clock_now();
   dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",w_start"<<","<<w_start_time.to_nsec()<<"#"<< dendl;
   if (should_write_local) {//这部分是写自己的
@@ -2118,6 +2149,17 @@ bool ECBackend::try_finish_rmw()
   if (op->write_in_progress())//如果return了false，会到check_ops的while循环也会一直等到pending_commit和pending_apply都完成的
     return false;
   
+  if(op->client_op!=NULL){
+    //dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
+    if(op->client_op->hoid==op->hoid&&op->client_op->tid==op->tid){
+      op->client_op->mark_w_end();
+    }else{
+      dout(0)<<"mismatch"<<dendl;
+    }
+  }else{
+    dout(0)<<"null client_op"<<dendl;
+  }
+
   utime_t w_end_time = ceph_clock_now();
   dout(0) << "mydebug:rmw_info#"<<op->hoid<<","<<op->tid<<",w_end"<<","<<w_end_time.to_nsec()<<"#"<< dendl;
   waiting_commit.pop_front();
