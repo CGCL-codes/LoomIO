@@ -3451,6 +3451,7 @@ void PrimaryLogPG::execute_ctx(OpContext *ctx)
   osd->send_message_osd_client(reply, m->get_connection());
 	ctx->sent_reply = true;
 	ctx->op->mark_commit_sent();
+  dout(0) << "mydebug:rmw_info#"<<ctx->obc->obs.oi.soid<<","<<rep_tid<<",w_total"<<","<<ctx->op->get_total_time<<"#"<< dendl;
       }
     });
   ctx->register_on_success(

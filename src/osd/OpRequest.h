@@ -89,6 +89,11 @@ private:
   uint8_t hit_flag_points;
   uint8_t latest_flag_point;
   utime_t dequeued_time;
+
+  //mydebug
+  utime_t started_time;
+  utime_t commit_sent_time;
+
   static const uint8_t flag_queued_for_pg=1 << 0;
   static const uint8_t flag_reached_pg =  1 << 1;
   static const uint8_t flag_delayed =     1 << 2;
@@ -150,12 +155,18 @@ public:
   }
   void mark_started() {
     mark_flag_point(flag_started, "started");
+    started_time = ceph_clock_now();
   }
   void mark_sub_op_sent(const string& s) {
     mark_flag_point_string(flag_sub_op_sent, s);
   }
   void mark_commit_sent() {
     mark_flag_point(flag_commit_sent, "commit_sent");
+    commit_sent_time = ceph_clock_now();
+  }
+
+  uint64_t get_total_time() const {
+    return (commit_sent_time.to_nsec()-started_time.to_nsec());
   }
 
   utime_t get_dequeued_time() const {
