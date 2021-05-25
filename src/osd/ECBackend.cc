@@ -2152,7 +2152,9 @@ bool ECBackend::try_finish_rmw()
   if(op->client_op!=NULL){
     //dout(0) << "mydebug:client_op:"<<op->client_op->hoid<<","<<op->client_op->tid<<"#"<< dendl;
     if(op->client_op->hoid==op->hoid&&op->client_op->tid==op->tid){
+      
       op->client_op->mark_w_end();
+      dout(0)<<"mark_w_end:"<<op->client_op->get_w_time();<<dendl;
     }else{
       dout(0)<<"mismatch"<<dendl;
     }
