@@ -194,7 +194,8 @@ public:
   }
 
   uint64_t get_w_time() const {
-    return (w_end_time.to_nsec()-w_start_time.to_nsec());
+    //return (w_end_time.to_nsec()-w_start_time.to_nsec());
+    return (w_start_time.to_nsec());
   }
 
   uint64_t get_total_time() const {
