@@ -1525,7 +1525,7 @@ void PrimaryLogPG::do_pg_op(OpRequestRef op)
   reply->claim_op_out_data(ops);
   reply->set_result(result);
   reply->set_reply_versions(info.last_update, info.last_user_version);
-  dout(0) << "mydebug:send back in ppG.cc:1528"<< dendl;
+  //dout(0) << "mydebug:send back in ppG.cc:1528"<< dendl;
   osd->send_message_osd_client(reply, m->get_connection());
   delete filter;
 }
@@ -2498,7 +2498,7 @@ void PrimaryLogPG::record_write_error(OpRequestRef op, const hobject_t &soid,
 				flags, true);
       }
       ldpp_dout(pg, 10) << " sending commit on " << *m << " " << reply << dendl;
-      ldpp_dout(pg, 0) << "mydebug:send back in ppG.cc:2501"<< dendl;
+      //ldpp_dout(pg, 0) << "mydebug:send back in ppG.cc:2501"<< dendl;
       pg->osd->send_message_osd_client(reply, m->get_connection());
     }
   };
@@ -3140,7 +3140,7 @@ void PrimaryLogPG::finish_proxy_write(hobject_t oid, ceph_tid_t tid, int r)
     }
     reply->add_flags(CEPH_OSD_FLAG_ACK | CEPH_OSD_FLAG_ONDISK);
     dout(10) << " sending commit on " << pwop << " " << reply << dendl;
-    dout(0) << "mydebug:send back in ppG.cc:3143"<< dendl;
+    //dout(0) << "mydebug:send back in ppG.cc:3143"<< dendl;
     osd->send_message_osd_client(reply, m->get_connection());
     pwop->sent_reply = true;
     pwop->ctx->op->mark_commit_sent();
@@ -7887,7 +7887,7 @@ void PrimaryLogPG::complete_read_ctx(int result, OpContext *ctx)
 
   reply->set_result(result);
   reply->add_flags(CEPH_OSD_FLAG_ACK | CEPH_OSD_FLAG_ONDISK);
-  dout(0) << "mydebug:send back in ppG.cc:7877"<< dendl;
+  //dout(0) << "mydebug:send back in ppG.cc:7877"<< dendl;
   osd->send_message_osd_client(reply, m->get_connection());
   close_op_ctx(ctx);
 }
@@ -8132,7 +8132,7 @@ void PrimaryLogPG::fill_in_copy_get_noent(OpRequestRef& op, hobject_t oid,
   reply->claim_op_out_data(m->ops);
   reply->set_result(-ENOENT);
   reply->add_flags(CEPH_OSD_FLAG_ACK | CEPH_OSD_FLAG_ONDISK);
-  dout(0) << "mydebug:send back in ppG.cc:8122"<< dendl;
+  //dout(0) << "mydebug:send back in ppG.cc:8122"<< dendl;
   osd->send_message_osd_client(reply, m->get_connection());
 }
 
