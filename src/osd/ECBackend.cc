@@ -1096,9 +1096,9 @@ void ECBackend::handle_sub_write_reply(
   assert(i != tid_to_op_map.end());
   
   //mydebug
-  dout(10)<<"mydebug: #object tid:"<<op.tid<<", osd:"<<from.osd<<", committed:"<<op.committed<<
-  ", applied:"<<op.applied<<", pending_commit:"<<i->second.pending_commit.size()<<
-  ", pending_apply:"<<i->second.pending_commit.size()<<" #"<<dendl;
+  //dout(10)<<"mydebug: #object tid:"<<op.tid<<", osd:"<<from.osd<<", committed:"<<op.committed<<
+  //", applied:"<<op.applied<<", pending_commit:"<<i->second.pending_commit.size()<<
+  //", pending_apply:"<<i->second.pending_commit.size()<<" #"<<dendl;
   
   utime_t sub_w_end_time = ceph_clock_now();
 
