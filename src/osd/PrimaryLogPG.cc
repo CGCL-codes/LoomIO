@@ -5965,7 +5965,7 @@ int PrimaryLogPG::do_osd_ops(OpContext *ctx, vector<OSDOp>& ops)
 	    t->nop(soid);
 	  }
 	} else {
-    dout(0) << "mydebug:#offset="<< op.extent.offset<<",length="<<op.extent.length<<"#"<< dendl;
+    dout(0) << "mydebug:#id="<<soid<<",offset="<< op.extent.offset<<",length="<<op.extent.length<<"#"<< dendl;
 	  t->write(
 	    soid, op.extent.offset, op.extent.length, osd_op.indata, op.flags);
 	}
