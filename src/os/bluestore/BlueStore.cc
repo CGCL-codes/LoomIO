@@ -2888,8 +2888,8 @@ void BlueStore::ExtentMap::punch_hole(
       if (p->logical_end() > end) {//这种情况需要写的区域包含在p里面
 	// split and deref middle
 	uint64_t front = offset - p->logical_offset;//offset的前面有多少
-	OldExtent* oe = ::create(c, offset, p->blob_offset + front, 
-					  length, p->bOldExtentlob);
+	OldExtent* oe = OldExtent::create(c, offset, p->blob_offset + front, 
+					  length, p->blob);
   //这个create的入口参数是collection，写入块的偏移，p将要被覆盖的七点在blob中的便宜，将要写入的长度，p对应的blob
 	old_extents->push_back(*oe);
 	add(end,//逻辑结束位置，也是留下块的逻辑开始位置
