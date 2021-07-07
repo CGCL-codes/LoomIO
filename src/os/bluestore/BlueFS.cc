@@ -1804,6 +1804,7 @@ int BlueFS::_flush_range(FileWriter *h, uint64_t offset, uint64_t length)
     if (bdev[i]) {
       assert(h->iocv[i]);
       if (h->iocv[i]->has_pending_aios()) {
+        dout(0) <<"mydebug:in _flush_range"<< dendl;
         bdev[i]->aio_submit(h->iocv[i]);
       }
     }

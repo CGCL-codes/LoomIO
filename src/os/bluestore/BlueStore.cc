@@ -7211,6 +7211,7 @@ int BlueStore::_do_read(
     }
   }
   if (ioc.has_pending_aios()) {
+    dout(0) <<"mydebug:in _do_read"<< dendl;
     bdev->aio_submit(&ioc);
     dout(20) << __func__ << " waiting for aio" << dendl;
     ioc.aio_wait();
@@ -9400,6 +9401,7 @@ void BlueStore::_deferred_submit_unlock(OpSequencer *osr)
   }
 
   deferred_lock.unlock();
+  dout(0) <<"mydebug:in _deferred_submit_unlock"<< dendl;
   bdev->aio_submit(&b->ioc);
 }
 
