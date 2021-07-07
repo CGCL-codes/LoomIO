@@ -542,7 +542,7 @@ void KernelDevice::aio_submit(IOContext *ioc)
 
   void *priv = static_cast<void*>(ioc);
   int r, retries = 0;
-  dout(0) << "mydebug: to submit_batch!" << dendl;
+  //dout(0) << "mydebug: to submit_batch!" << dendl;
   r = aio_queue.submit_batch(ioc->running_aios.begin(), e, 
 			     ioc->num_running.load(), priv, &retries);
   
