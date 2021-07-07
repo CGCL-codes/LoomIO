@@ -512,7 +512,7 @@ void KernelDevice::aio_submit(IOContext *ioc)
 	   << " running " << ioc->num_running.load()
 	   << dendl;
 
-  dout(0) << "mydebug: in aio_submit" << dendl;
+  //dout(0) << "mydebug: in aio_submit" << dendl;
 
   if (ioc->num_pending.load() == 0) {
     dout(0) << "mydebug: in aio_submit, no load, return" << dendl;
