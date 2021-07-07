@@ -1997,13 +1997,13 @@ ostream& operator<<(ostream& out, const BlueStore::Extent& e)
 
 // OldExtent
 BlueStore::OldExtent* BlueStore::OldExtent::create(CollectionRef c,
-						   uint32_t lo,
-						   uint32_t o,
-						   uint32_t l,
-						   BlobRef& b) {
-  OldExtent* oe = new OldExtent(lo, o, l, b);
-  b->put_ref(c.get(), o, l, &(oe->r));
-  oe->blob_empty = b->get_referenced_bytes() == 0;
+						   uint32_t lo,//逻辑偏移
+						   uint32_t o,//blob中的偏移
+						   uint32_t l,//blob中的长度
+						   BlobRef& b) {//指向的blob
+  OldExtent* oe = new OldExtent(lo, o, l, b);//create的时候会初始化oldextent中的extent成员，然后blob-empty是false
+  b->put_ref(c.get(), o, l, &(oe->r));//r是pextentvector，感觉上是把blob这段的offset-length对应的pextent给放入oe->r
+  oe->blob_empty = b->get_referenced_bytes() == 0;//如果该blob没有extent在上面了，就说明这个old_extent所在的blob已经空了
   return oe;
 }
 
@@ -2871,54 +2871,64 @@ void BlueStore::ExtentMap::punch_hole(
   uint64_t offset,
   uint64_t length,
   old_extent_map_t *old_extents)
-{
-  auto p = seek_lextent(offset);
-  uint64_t end = offset + length;
-  while (p != extent_map.end()) {
-    if (p->logical_offset >= end) {
-      break;
+{//主要处理三种情况
+//   第一种：都不相干     第二种：只和前面的后半部有重叠  第三种：都有重叠    第四种：和前面的完全重叠  第五种：没有重叠  第六种：只和前面的前面部分重叠
+//     ***            ***                     ***              ***                   ***                 ***
+//***       ***      ***   ***              *** ***          ****** ***                  ***              ***
+//
+//
+  auto p = seek_lextent(offset);//找到需要操作的lextent，这个lextent，要么就是offset落在的lextent，要么就是大于offset的第一个lextent（可能就是begin）
+  //第一种的话会返回后面的那个，第二种、第三种、第四种、 第六种会返回前面的
+  uint64_t end = offset + length;//计算出end
+  while (p != extent_map.end()) {//对于所有的lextent
+    if (p->logical_offset >= end) {//如果p的逻辑偏移大于end
+      break;//也就是找到了end后面的一个不相邻的lextent，就break
     }
-    if (p->logical_offset < offset) {
-      if (p->logical_end() > end) {
+    if (p->logical_offset < offset) {//如果p在offset的前面
+      if (p->logical_end() > end) {//这种情况需要写的区域包含在p里面
 	// split and deref middle
-	uint64_t front = offset - p->logical_offset;
-	OldExtent* oe = OldExtent::create(c, offset, p->blob_offset + front, 
-					  length, p->blob);
+	uint64_t front = offset - p->logical_offset;//offset的前面有多少
+	OldExtent* oe = ::create(c, offset, p->blob_offset + front, 
+					  length, p->bOldExtentlob);
+  //这个create的入口参数是collection，写入块的偏移，p将要被覆盖的七点在blob中的便宜，将要写入的长度，p对应的blob
 	old_extents->push_back(*oe);
-	add(end,
-	    p->blob_offset + front + length,
-	    p->length - front - length,
-	    p->blob);
-	p->length = front;
-	break;
-      } else {
+	add(end,//逻辑结束位置，也是留下块的逻辑开始位置
+	    p->blob_offset + front + length,//写入的块在blob中的结束位置，也是尾部留下的块的开始位置
+	    p->length - front - length,//后面留下的长度
+	    p->blob);//p的blob
+  //这个add的作用应该是把这个尾部作为新的extent加入blob
+	p->length = front;//这个p的长度被定为了front，也就是说旧的lextent只留下了前面的
+	break;//这种写入就不需要接着遍历了，直接break
+      } else {//这种情况需要写的区域的尾部超过的原始 p的end
 	// deref tail
 	assert(p->logical_end() > offset); // else seek_lextent bug
-	uint64_t keep = offset - p->logical_offset;
+	uint64_t keep = offset - p->logical_offset;//保留的长度是offset-p的offset，还是front
 	OldExtent* oe = OldExtent::create(c, offset, p->blob_offset + keep,
-					  p->length - keep, p->blob);
+					  p->length - keep, p->blob);//这个里面除了头上的一些，其他全是old
 	old_extents->push_back(*oe);
 	p->length = keep;
-	++p;
+	++p;//这种情况下可以下一个p
 	continue;
       }
     }
-    if (p->logical_offset + p->length <= end) {
+    //到这留下的p，他的offset就是在将要写入块的offset后面了，
+    if (p->logical_offset + p->length <= end) {//这种情况将要写入的块完全覆盖了
       // deref whole lextent
       OldExtent* oe = OldExtent::create(c, p->logical_offset, p->blob_offset,
 				        p->length, p->blob);
       old_extents->push_back(*oe);
-      rm(p++);
+      rm(p++);//直接把该premove了
       continue;
     }
     // deref head
+    //到这留下的p，他的头部和将要写入的块重叠
     uint64_t keep = p->logical_end() - end;
     OldExtent* oe = OldExtent::create(c, p->logical_offset, p->blob_offset,
 				      p->length - keep, p->blob);
     old_extents->push_back(*oe);
 
     add(end, p->blob_offset + p->length - keep, keep, p->blob);
-    rm(p);
+    rm(p);//add完之后把p删了，因为前面那部分都不要了，所以直接把p删了，前面的不删是因为p的前部还有一些
     break;
   }
 }
@@ -9584,6 +9594,7 @@ int BlueStore::queue_transactions(
 void BlueStore::_txc_aio_submit(TransContext *txc)
 {
   dout(10) << __func__ << " txc " << txc << dendl;
+  dout(0) << "in BlueStore::_txc_aio_submit" << dendl;
   bdev->aio_submit(&txc->ioc);
 }
 
@@ -10381,34 +10392,38 @@ void BlueStore::_do_write_big(
 	   << dendl;
   logger->inc(l_bluestore_write_big);
   logger->inc(l_bluestore_write_big_bytes, length);
-  o->extent_map.punch_hole(c, offset, length, &wctx->old_extents);
+  o->extent_map.punch_hole(c, offset, length, &wctx->old_extents);//这一步就是把原来的lextent给重新安排一下，该切割的切割，该覆盖的覆盖
+  //接下来只要把这整块当做新的lextent写入就行了
   auto max_bsize = MAX(wctx->target_blob_size, min_alloc_size);
   while (length > 0) {
     bool new_blob = false;
-    uint32_t l = MIN(max_bsize, length);
+    uint32_t l = MIN(max_bsize, length);//一次分配不能超过最大的blob大小
     BlobRef b;
     uint32_t b_off = 0;
 
     //attempting to reuse existing blob
     if (!wctx->compress) {
       // look for an existing mutable blob we can reuse
+      //前面一个extent map是一个大机构，后面的extent_map是具体维护extent到blob映射的结构
       auto begin = o->extent_map.extent_map.begin();
       auto end = o->extent_map.extent_map.end();
-      auto ep = o->extent_map.seek_lextent(offset);
+      auto ep = o->extent_map.seek_lextent(offset);//因为之前punch过了，这边只会返回会面的第一个lextent了，这里从ep向后找
       auto prev_ep = ep;
       if (prev_ep != begin) {
-        --prev_ep;
+        --prev_ep;//如果不是开始的话，就往前一个，从prev_ep向前找
       } else {
         prev_ep = end; // to avoid this extent check as it's a duplicate
+      //如果是开始的话（前面没有了），就直接到end（但这个end是空的）,从end向前找
       }
       auto min_off = offset >= max_bsize ? offset - max_bsize : 0;
+      //如果offset大于blob的大小，要给之前的object内容留下空间，直接从offset-max_bsize开始有空闲的blob开始找
       // search suitable extent in both forward and reverse direction in
       // [offset - target_max_blob_size, offset + target_max_blob_size] range
       // then check if blob can be reused via can_reuse_blob func.
       bool any_change;
       do {
 	any_change = false;
-	if (ep != end && ep->logical_offset < offset + max_bsize) {
+	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep的offset落在将写入的块的offset到blobsize之间
 	  if (offset >= ep->blob_start() &&
               ep->blob->can_reuse_blob(min_alloc_size, max_bsize,
 	                               offset - ep->blob_start(),

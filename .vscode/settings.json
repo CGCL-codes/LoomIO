@@ -11,6 +11,11 @@
         "unordered_set": "cpp",
         "vector": "cpp",
         "optional": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "array": "cpp",
+        "future": "cpp",
+        "istream": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp"
     }
 }

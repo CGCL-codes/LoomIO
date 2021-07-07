@@ -10852,7 +10852,7 @@ void OSD::ShardedOpWQ::_process(uint32_t thread_index, heartbeat_handle_d *hb)
       sdata->sdata_op_ordering_lock.Unlock();
       return;
     }
-  }
+  }//如果是空的话就等待一段时间
   pair<spg_t, PGQueueable> item = sdata->pqueue->dequeue();
   if (osd->is_stopping()) {
     sdata->sdata_op_ordering_lock.Unlock();
