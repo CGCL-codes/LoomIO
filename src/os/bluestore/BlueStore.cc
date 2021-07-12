@@ -10433,7 +10433,7 @@ void BlueStore::_do_write_big(
 	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep（向后找的指针）的offset落在将写入的块的offset到blobsize之间
 	  //假设从一个blob的头开始分配这个blob的话，ep被包含在里面，也就是说，这两个可以存在于一个blob中
     if (offset >= ep->blob_start() &&
-              ep->blob->can_reuse_blob( min_allo c_size, max_bsize,
+              ep->blob->can_reuse_blob( min_alloc_size, max_bsize,
 	                               offset - ep->blob_start(),//如果ep->blob_start()表示的是这个blob的起点对应的这个对象的offset的话，那么这个offset的意思
                                                            //就是这个块在这个blob内的偏移
 	                               &l)) {
