@@ -3791,7 +3791,7 @@ BlueStore::BlueStore(CephContext *cct, const string& path)
     kv_finalize_thread(this),
     mempool_thread(this)
 {
-  dout<<"mydebug: 2parameter bluestore_path"<<path<<dendl;
+  dout(0)<<"mydebug: 2parameter bluestore_path"<<path<<dendl;
   _init_logger();
   cct->_conf->add_observer(this);
   set_cache_shards(1);
@@ -3813,7 +3813,7 @@ BlueStore::BlueStore(CephContext *cct,
     min_alloc_size_order(ctz(_min_alloc_size)),
     mempool_thread(this)
 {
-   dout<<"mydebug: 3parameter bluestore_path"<<path<<dendl;
+   dout(0)<<"mydebug: 3parameter bluestore_path"<<path<<dendl;
   _init_logger();
   cct->_conf->add_observer(this);
   set_cache_shards(1);
