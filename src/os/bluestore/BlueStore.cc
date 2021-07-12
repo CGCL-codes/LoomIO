@@ -10471,6 +10471,8 @@ void BlueStore::_do_write_big(
 	  }
 	}
       } while (b == nullptr && any_change);//当没有找到并且还可以找（因为每次指针可以移动的时候，才会把anychange变成true）
+    }else{
+      dout(0) <<"mydebug: wctx->compress"<< dendl;
     }
     if (b == nullptr) {
       b = c->new_blob();
