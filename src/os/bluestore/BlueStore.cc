@@ -1885,6 +1885,7 @@ bool BlueStore::Blob::can_reuse_blob(uint32_t min_alloc_size,//用来划分big�
   uint32_t new_blen = blen;
 
   // make sure target_blob_size isn't less than current blob len
+  dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<target_blob_size << dendl;
   target_blob_size = MAX(blen, target_blob_size);
   
   //确定overlap
