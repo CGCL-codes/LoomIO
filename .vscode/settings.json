@@ -16,6 +16,8 @@
         "future": "cpp",
         "istream": "cpp",
         "tuple": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "*.impl": "cpp",
+        "cmath": "cpp"
     }
 }

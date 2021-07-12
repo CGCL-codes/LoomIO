@@ -1859,10 +1859,11 @@ bool BlueStore::Blob::put_ref(
   return b.release_extents(empty, logical, r);
 }
 
-bool BlueStore::Blob::can_reuse_blob(uint32_t min_alloc_size,
-                		     uint32_t target_blob_size,
-		                     uint32_t b_offset,
-		                     uint32_t *length0) {
+bool BlueStore::Blob::can_reuse_blob(uint32_t min_alloc_size,//用来划分big和small的大小
+                		     uint32_t target_blob_size,//blob size
+		                     uint32_t b_offset,//块在该blob内的起始地址
+		                     uint32_t *length0) {//长度
+  //用来判断这个blob是否能用
   assert(min_alloc_size);
   assert(target_blob_size);
   if (!get_blob().is_mutable()) {
@@ -1870,7 +1871,7 @@ bool BlueStore::Blob::can_reuse_blob(uint32_t min_alloc_size,
   }
 
   uint32_t length = *length0;
-  uint32_t end = b_offset + length;
+  uint32_t end = b_offset + length;//前面总共要空出来的位置
 
   // Currently for the sake of simplicity we omit blob reuse if data is
   // unaligned with csum chunk. Later we can perform padding if needed.
@@ -1880,18 +1881,19 @@ bool BlueStore::Blob::can_reuse_blob(uint32_t min_alloc_size,
     return false;
   }
 
-  auto blen = get_blob().get_logical_length();
+  auto blen = get_blob().get_logical_length();//得到逻辑长度
   uint32_t new_blen = blen;
 
   // make sure target_blob_size isn't less than current blob len
   target_blob_size = MAX(blen, target_blob_size);
-
-  if (b_offset >= blen) {
+  
+  //确定overlap
+  if (b_offset >= blen) {//起始地址就比这个blob大了
     // new data totally stands out of the existing blob
     new_blen = end;
   } else {
     // new data overlaps with the existing blob
-    new_blen = MAX(blen, end);
+    new_blen = MAX(blen, end);//
 
     uint32_t overlap = 0;
     if (new_blen > blen) {
@@ -1906,10 +1908,10 @@ bool BlueStore::Blob::can_reuse_blob(uint32_t min_alloc_size,
     }
   }
 
-  if (new_blen > blen) {
-    int64_t overflow = int64_t(new_blen) - target_blob_size;
+  if (new_blen > blen) {//需要的len大于该blob的len，要么是完全超出，要么是有重叠，但是还是有超过
+    int64_t overflow = int64_t(new_blen) - target_blob_size;//需要确认下target_blob_size和logic_length的关系
     // Unable to decrease the provided length to fit into max_blob_size
-    if (overflow >= length) {
+    if (overflow >= length) {//这个好像只能是完全超出
       return false;
     }
 
@@ -3789,6 +3791,7 @@ BlueStore::BlueStore(CephContext *cct, const string& path)
     kv_finalize_thread(this),
     mempool_thread(this)
 {
+  dout<<"mydebug: 2parameter bluestore_path"<<path<<dendl;
   _init_logger();
   cct->_conf->add_observer(this);
   set_cache_shards(1);
@@ -3810,6 +3813,7 @@ BlueStore::BlueStore(CephContext *cct,
     min_alloc_size_order(ctz(_min_alloc_size)),
     mempool_thread(this)
 {
+   dout<<"mydebug: 3parameter bluestore_path"<<path<<dendl;
   _init_logger();
   cct->_conf->add_observer(this);
   set_cache_shards(1);
@@ -10419,17 +10423,21 @@ void BlueStore::_do_write_big(
       }
       auto min_off = offset >= max_bsize ? offset - max_bsize : 0;
       //如果offset大于blob的大小，要给之前的object内容留下空间，直接从offset-max_bsize开始有空闲的blob开始找
+      //这个地方还要再确认一下，看下min_off到底是从哪边开始的
       // search suitable extent in both forward and reverse direction in
       // [offset - target_max_blob_size, offset + target_max_blob_size] range
       // then check if blob can be reused via can_reuse_blob func.
       bool any_change;
       do {
 	any_change = false;
-	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep的offset落在将写入的块的offset到blobsize之间
-	  if (offset >= ep->blob_start() &&
-              ep->blob->can_reuse_blob(min_alloc_size, max_bsize,
-	                               offset - ep->blob_start(),
+	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep（向后找的指针）的offset落在将写入的块的offset到blobsize之间
+	  //假设从一个blob的头开始分配这个blob的话，ep被包含在里面，也就是说，这两个可以存在于一个blob中
+    if (offset >= ep->blob_start() &&
+              ep->blob->can_reuse_blob( min_allo c_size, max_bsize,
+	                               offset - ep->blob_start(),//如果ep->blob_start()表示的是这个blob的起点对应的这个对象的offset的话，那么这个offset的意思
+                                                           //就是这个块在这个blob内的偏移
 	                               &l)) {
+      //如果发现ep所在的blob的start是小于这个offset的，那么说不定可以塞进去
 	    b = ep->blob;
 	    b_off = offset - ep->blob_start();
             prev_ep = end; // to avoid check below
@@ -10456,7 +10464,7 @@ void BlueStore::_do_write_big(
 	    prev_ep = end; // to avoid useless first extent re-check
 	  }
 	}
-      } while (b == nullptr && any_change);
+      } while (b == nullptr && any_change);//当没有找到并且还可以找（因为每次指针可以移动的时候，才会把anychange变成true）
     }
     if (b == nullptr) {
       b = c->new_blob();
@@ -10467,7 +10475,7 @@ void BlueStore::_do_write_big(
     bufferlist t;
     blp.copy(l, t);
     wctx->write(offset, b, l, b_off, t, b_off, l, false, new_blob);
-    offset += l;
+    offset += l;//这边的感觉是把这部分从offset开始进行分割
     length -= l;
     logger->inc(l_bluestore_write_big_blobs);
   }
