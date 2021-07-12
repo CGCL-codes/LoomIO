@@ -10403,6 +10403,8 @@ void BlueStore::_do_write_big(
   auto max_bsize = MAX(wctx->target_blob_size, min_alloc_size);
   
   while (length > 0) {
+    dout(0) <<"mydebug: in while,length="<<length<< dendl;
+
     bool new_blob = false;
     uint32_t l = MIN(max_bsize, length);//一次分配不能超过最大的blob大小
     BlobRef b;
