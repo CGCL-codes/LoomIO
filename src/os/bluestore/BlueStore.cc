@@ -10428,10 +10428,14 @@ void BlueStore::_do_write_big(
       // then check if blob can be reused via can_reuse_blob func.
       bool any_change;
       do {
-	any_change = false;
-	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep（向后找的指针）的offset落在将写入的块的offset到blobsize之间
+        
+  if(ep!=end){
     auto blen = ep->blob->get_blob().get_logical_length();//得到逻辑长度
     dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize << dendl;
+  }
+
+	any_change = false;
+	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep（向后找的指针）的offset落在将写入的块的offset到blobsize之间
     //假设从一个blob的头开始分配这个blob的话，ep被包含在里面，也就是说，这两个可以存在于一个blob中
     if (offset >= ep->blob_start() &&
               ep->blob->can_reuse_blob( min_alloc_size, max_bsize,
