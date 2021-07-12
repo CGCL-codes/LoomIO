@@ -1883,10 +1883,7 @@ bool BlueStore::Blob::can_reuse_blob(uint32_t min_alloc_size,//用来划分big�
 
   auto blen = get_blob().get_logical_length();//得到逻辑长度
   uint32_t new_blen = blen;
-
   // make sure target_blob_size isn't less than current blob len
-  auto cct = coll->store->cct; //used by dout
-  dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<target_blob_size << dendl;
   target_blob_size = MAX(blen, target_blob_size);
   
   //确定overlap
@@ -10433,7 +10430,9 @@ void BlueStore::_do_write_big(
       do {
 	any_change = false;
 	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep（向后找的指针）的offset落在将写入的块的offset到blobsize之间
-	  //假设从一个blob的头开始分配这个blob的话，ep被包含在里面，也就是说，这两个可以存在于一个blob中
+    auto blen = ep->blob->get_blob().get_logical_length();//得到逻辑长度
+    dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize << dendl;
+    //假设从一个blob的头开始分配这个blob的话，ep被包含在里面，也就是说，这两个可以存在于一个blob中
     if (offset >= ep->blob_start() &&
               ep->blob->can_reuse_blob( min_alloc_size, max_bsize,
 	                               offset - ep->blob_start(),//如果ep->blob_start()表示的是这个blob的起点对应的这个对象的offset的话，那么这个offset的意思
