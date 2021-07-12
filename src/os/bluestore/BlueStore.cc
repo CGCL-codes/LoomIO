@@ -10391,7 +10391,7 @@ void BlueStore::_do_write_big(
     bufferlist::iterator& blp,
     WriteContext *wctx)
 {
-  dout(0) <<"mydebug: in _do_write_big"<< dendl;
+  //dout(0) <<"mydebug: in _do_write_big"<< dendl;
   dout(10) << __func__ << " 0x" << std::hex << offset << "~" << length
 	   << " target_blob_size 0x" << wctx->target_blob_size << std::dec
 	   << " compress " << (int)wctx->compress
@@ -10401,6 +10401,7 @@ void BlueStore::_do_write_big(
   o->extent_map.punch_hole(c, offset, length, &wctx->old_extents);//这一步就是把原来的lextent给重新安排一下，该切割的切割，该覆盖的覆盖
   //接下来只要把这整块当做新的lextent写入就行了
   auto max_bsize = MAX(wctx->target_blob_size, min_alloc_size);
+  
   while (length > 0) {
     bool new_blob = false;
     uint32_t l = MIN(max_bsize, length);//一次分配不能超过最大的blob大小
@@ -10429,11 +10430,6 @@ void BlueStore::_do_write_big(
       // then check if blob can be reused via can_reuse_blob func.
       bool any_change;
       do {
-
-  if(ep!=end){
-    auto blen = ep->blob->get_blob().get_logical_length();//得到逻辑长度
-    dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize << dendl;
-  }
 
 	any_change = false;
 	if (ep != end && ep->logical_offset < offset + max_bsize) {//ep（向后找的指针）的offset落在将写入的块的offset到blobsize之间
@@ -10479,6 +10475,10 @@ void BlueStore::_do_write_big(
       b_off = 0;
       new_blob = true;
     }
+
+    
+    auto blen = b->get_blob().get_logical_length();//得到逻辑长度
+    dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize << dendl;
 
     bufferlist t;
     blp.copy(l, t);
