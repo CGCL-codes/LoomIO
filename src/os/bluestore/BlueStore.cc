@@ -10391,6 +10391,7 @@ void BlueStore::_do_write_big(
     bufferlist::iterator& blp,
     WriteContext *wctx)
 {
+  dout(0) <<"mydebug: in _do_write_big"<< dendl;
   dout(10) << __func__ << " 0x" << std::hex << offset << "~" << length
 	   << " target_blob_size 0x" << wctx->target_blob_size << std::dec
 	   << " compress " << (int)wctx->compress
@@ -10428,7 +10429,7 @@ void BlueStore::_do_write_big(
       // then check if blob can be reused via can_reuse_blob func.
       bool any_change;
       do {
-        
+
   if(ep!=end){
     auto blen = ep->blob->get_blob().get_logical_length();//得到逻辑长度
     dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize << dendl;
