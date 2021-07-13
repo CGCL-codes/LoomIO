@@ -10480,7 +10480,7 @@ void BlueStore::_do_write_big(
 
     
     auto blen = b->get_blob().get_logical_length();//得到逻辑长度
-    dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize << dendl;
+    dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize<<",min_allocate_size="<<min_alloc_size<< dendl;
 
     bufferlist t;
     blp.copy(l, t);
