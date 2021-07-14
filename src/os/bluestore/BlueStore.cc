@@ -10472,19 +10472,21 @@ void BlueStore::_do_write_big(
     }else{
       dout(0) <<"mydebug: wctx->compress"<< dendl;
     }
+    
     if (b == nullptr) {
       b = c->new_blob();
       b_off = 0;
       new_blob = true;
     }
 
-    
-    auto blen = b->get_blob().get_logical_length();//得到逻辑长度
-    dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize<<",min_allocate_size="<<min_alloc_size<< dendl;
+    // mydebug
+    // auto blen = b->get_blob().get_logical_length();//得到逻辑长度
+    // dout(0) <<"mydebug:blen="<<blen<<",target_blob_size="<<max_bsize<<",min_allocate_size="<<min_alloc_size<< dendl;
 
     bufferlist t;
     blp.copy(l, t);
     wctx->write(offset, b, l, b_off, t, b_off, l, false, new_blob);
+    //          逻辑便宜，对应的blob，长度，blob中的偏移，内容，blob中的偏移，长度，否，是否是新建的blob
     offset += l;//这边的感觉是把这部分从offset开始进行分割
     length -= l;
     logger->inc(l_bluestore_write_big_blobs);
