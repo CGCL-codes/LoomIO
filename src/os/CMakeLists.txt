@@ -16,7 +16,8 @@ set(libos_srcs
   memstore/MemStore.cc
   kstore/KStore.cc
   kstore/kstore_types.cc
-  fs/FS.cc)
+  fs/FS.cc
+  )
 
 if(HAVE_LIBAIO)
   list(APPEND libos_srcs
@@ -141,3 +142,6 @@ endif(WITH_SPDK)
 if(WITH_LTTNG AND WITH_EVENTTRACE)
   add_dependencies(os eventtrace_tp)
 endif()
+
+
+add_subdirectory(greenfs)
