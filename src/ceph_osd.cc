@@ -231,10 +231,12 @@ int main(int argc, const char **argv)
   }
 
   // the store
+  dout(0) << "mydebug: in the store"<< dendl;
   string store_type = g_conf->osd_objectstore;
   {
     char fn[PATH_MAX];
     snprintf(fn, sizeof(fn), "%s/type", g_conf->osd_data.c_str());
+    dout(0) << "mydebug: fn:"<<fn<< dendl;
     int fd = ::open(fn, O_RDONLY|O_CLOEXEC);
     if (fd >= 0) {
       bufferlist bl;
@@ -286,6 +288,7 @@ int main(int argc, const char **argv)
 	derr << "created new key in keyring " << g_conf->keyring << dendl;
     }
   }
+  dout(0)<<"mydebug: mkfs:"<<mkfs<<dendl;
   if (mkfs) {
     common_init_finish(g_ceph_context);
     MonClient mc(g_ceph_context);
