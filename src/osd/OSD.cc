@@ -1749,7 +1749,7 @@ int OSD::mkfs(CephContext *cct, ObjectStore *store, const string &dev,
 	      uuid_d fsid, int whoami)
 {
   int ret;
-
+  dout(0)<<"mydebug: in OSD::mkfs"<<dendl;
   ceph::shared_ptr<ObjectStore::Sequencer> osr(
     new ObjectStore::Sequencer("mkfs"));
   OSDSuperblock sb;
