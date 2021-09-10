@@ -5608,7 +5608,7 @@ int BlueStore::mkfs()
   {
     string done;
     r = read_meta("mkfs_done", &done);//判断是否已经mkfs过了，即是否有现成的配置文件
-    if (r == 0) {‘’
+    if (r == 0) {
       dout(1) << __func__ << " already created" << dendl;
       if (cct->_conf->bluestore_fsck_on_mkfs) {
         r = fsck(cct->_conf->bluestore_fsck_on_mkfs_deep);
