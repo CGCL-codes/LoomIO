@@ -4914,7 +4914,7 @@ void BlueStore::_close_db_and_around()
 
 int BlueStore::_open_db(bool create)
 {
-  dout(0) << "mydebug: in _open_bdev"<< dendl;
+  dout(0) << "mydebug: in _open_db"<< dendl;
   int r;
   assert(!db);
   string fn = path + "/db";
@@ -5197,7 +5197,7 @@ int BlueStore::_open_db(bool create)
   }
   dout(1) << __func__ << " opened " << kv_backend
 	  << " path " << fn << " options " << options << dendl;
-  dout(0) << "mydebug: out _open_bdev"<< dendl;
+  dout(0) << "mydebug: out _open_db"<< dendl;
   return 0;
 
 free_bluefs:
@@ -5726,6 +5726,7 @@ int BlueStore::mkfs()
   if (r < 0)
     goto out_close_db;
 
+  //这个地方是准备超级块？
   {
     KeyValueDB::Transaction t = db->get_transaction();
     {
@@ -5814,6 +5815,7 @@ void BlueStore::set_cache_shards(unsigned num)
 int BlueStore::_mount(bool kv_only)
 {
   dout(1) << __func__ << " path " << path << dendl;
+  dout(0) << "mydebug: in _mount " << path << dendl;
 
   _kv_only = kv_only;//这个地方默认是false
 
@@ -5910,6 +5912,8 @@ int BlueStore::_mount(bool kv_only)
   mempool_thread.init();
 
   mounted = true;
+
+  dout(0) << "mydebug: out _mount " << dendl;
   return 0;
 
  out_stop:
