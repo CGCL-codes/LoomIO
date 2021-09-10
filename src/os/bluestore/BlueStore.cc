@@ -5973,6 +5973,7 @@ int BlueStore::umount()
 
 int BlueStore::cold_open()
 {
+  dout(0)<<"mydebug: in cold open"<<dendl;
   int r = _open_path();
   if (r < 0)
     return r;
@@ -5995,6 +5996,7 @@ int BlueStore::cold_open()
   if (r < 0) {
     goto out_bdev;
   }
+  dout(0)<<"mydebug: out cold open"<<dendl;
   return 0;
  out_bdev:
   _close_bdev();
@@ -6070,6 +6072,7 @@ int BlueStore::_fsck_check_extents(
 
 int BlueStore::_fsck(bool deep, bool repair)
 {
+  dout(0)<<"mydebug: in _fsck"<<dendl;
   dout(1) << __func__
 	  << (repair ? " fsck" : " repair")
 	  << (deep ? " (deep)" : " (shallow)") << " start" << dendl;
@@ -6698,6 +6701,7 @@ int BlueStore::_fsck(bool deep, bool repair)
   dout(1) << __func__ << " finish with " << errors << " errors, " << repaired
 	  << " repaired, " << (errors - repaired) << " remaining in "
 	  << duration << " seconds" << dendl;
+    dout(0)<<"mydebug: out _fsck"<<dendl;
   return errors - repaired;
 }
 
