@@ -4478,6 +4478,7 @@ void BlueStore::_set_alloc_sizes(void)
 int BlueStore::_open_bdev(bool create)
 {
   assert(bdev == NULL);
+  dout(0) << "mydebug: in _open_bdev"<< dendl;
   string p = path + "/block";
   bdev = BlockDevice::create(cct, p, aio_cb, static_cast<void*>(this));
   int r = bdev->open(p);
@@ -4500,6 +4501,8 @@ int BlueStore::_open_bdev(bool create)
   if (r < 0) {
     goto fail_close;
   }
+
+  dout(0) << "mydebug: out _open_bdev"<< dendl;
   return 0;
 
  fail_close:
@@ -4911,6 +4914,7 @@ void BlueStore::_close_db_and_around()
 
 int BlueStore::_open_db(bool create)
 {
+  dout(0) << "mydebug: in _open_bdev"<< dendl;
   int r;
   assert(!db);
   string fn = path + "/db";
@@ -5193,6 +5197,7 @@ int BlueStore::_open_db(bool create)
   }
   dout(1) << __func__ << " opened " << kv_backend
 	  << " path " << fn << " options " << options << dendl;
+  dout(0) << "mydebug: out _open_bdev"<< dendl;
   return 0;
 
 free_bluefs:
@@ -5588,11 +5593,12 @@ int BlueStore::_setup_block_symlink_or_file(
 
 int BlueStore::mkfs()
 {
-  dout(1) << __func__ << " path " << path << dendl;
+  dout(1) << __func__ << " path " << path << dendl;//输出路径，应该是工作路径
+  dout(0) <<"mydebug: in mkfs" << path << dendl;
   int r;
   uuid_d old_fsid;
 
-  if (cct->_conf->osd_max_object_size > OBJECT_MAX_SIZE) {
+  if (cct->_conf->osd_max_object_size > OBJECT_MAX_SIZE) {//这个感觉不太需要，判断ceph中设置的object大小是不是超过bluestore自定义的大小
     derr << __func__ << " osd_max_object_size "
 	 << cct->_conf->osd_max_object_size << " > bluestore max "
 	 << OBJECT_MAX_SIZE << dendl;
@@ -5601,8 +5607,8 @@ int BlueStore::mkfs()
 
   {
     string done;
-    r = read_meta("mkfs_done", &done);
-    if (r == 0) {
+    r = read_meta("mkfs_done", &done);//判断是否已经mkfs过了，即是否有现成的配置文件
+    if (r == 0) {‘’
       dout(1) << __func__ << " already created" << dendl;
       if (cct->_conf->bluestore_fsck_on_mkfs) {
         r = fsck(cct->_conf->bluestore_fsck_on_mkfs_deep);
@@ -5616,7 +5622,7 @@ int BlueStore::mkfs()
           r = -EIO;
         }
       }
-      return r; // idempotent
+      return r; // idempotent，已经mkfs过了的话就返回
     }
   }
 
@@ -5789,6 +5795,7 @@ int BlueStore::mkfs()
   } else {
     dout(0) << __func__ << " success" << dendl;
   }
+  dout(0) <<"mydebug: out mkfs" << path << dendl;
   return r;
 }
 
@@ -5808,7 +5815,7 @@ int BlueStore::_mount(bool kv_only)
 {
   dout(1) << __func__ << " path " << path << dendl;
 
-  _kv_only = kv_only;
+  _kv_only = kv_only;//这个地方默认是false
 
   {
     string type;
