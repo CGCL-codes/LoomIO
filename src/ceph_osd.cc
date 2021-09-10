@@ -618,6 +618,7 @@ flushjournal_out:
                 g_conf->osd_data,
                 g_conf->osd_journal);
 
+  dout(0)<<"mydebug: before osd->pre_init"<<dendl;
   int err = osd->pre_init();
   if (err < 0) {
     derr << TEXT_RED << " ** ERROR: osd pre_init failed: " << cpp_strerror(-err)
@@ -634,6 +635,7 @@ flushjournal_out:
   ms_objecter->start();
 
   // start osd
+  dout(0)<<"mydebug: before osd->init"<<dendl;
   err = osd->init();
   if (err < 0) {
     derr << TEXT_RED << " ** ERROR: osd init failed: " << cpp_strerror(-err)
@@ -647,11 +649,14 @@ flushjournal_out:
   register_async_signal_handler_oneshot(SIGINT, handle_osd_signal);
   register_async_signal_handler_oneshot(SIGTERM, handle_osd_signal);
 
+  dout(0)<<"mydebug: before osd->final_init"<<dendl;
   osd->final_init();
 
   if (g_conf->inject_early_sigterm)
     kill(getpid(), SIGTERM);
 
+
+  dout(0)<<"mydebug: before wait"<<dendl;
   ms_public->wait();
   ms_hb_front_client->wait();
   ms_hb_back_client->wait();
@@ -660,11 +665,13 @@ flushjournal_out:
   ms_cluster->wait();
   ms_objecter->wait();
 
+  dout(0)<<"mydebug: before unregister"<<dendl;
   unregister_async_signal_handler(SIGHUP, sighup_handler);
   unregister_async_signal_handler(SIGINT, handle_osd_signal);
   unregister_async_signal_handler(SIGTERM, handle_osd_signal);
   shutdown_async_signal_handler();
 
+  dout(0)<<"mydebug: before delete"<<dendl;
   // done
   delete osd;
   delete ms_public;
