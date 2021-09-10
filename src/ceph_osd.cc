@@ -585,7 +585,9 @@ flushjournal_out:
     exit(1);
 
   // Set up crypto, daemonize, etc.
+  dout(0)<<"mydebug: before global_init_daemonize"<<dendl;
   global_init_daemonize(g_ceph_context);
+  dout(0)<<"mydebug: before common_init_finish"<<dendl;
   common_init_finish(g_ceph_context);
 
   TracepointProvider::initialize<osd_tracepoint_traits>(g_ceph_context);
