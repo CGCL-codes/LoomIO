@@ -109,7 +109,7 @@ int main(int argc, const char **argv)
   def_args.push_back("--leveldb-log=");
 
   for(auto i: args)
-    dout(0)<<"mydebug: argv"<<i<<dendl;
+    dout(0)<<"mydebug: argv "<<*i<<dendl;
 
   auto cct = global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
 			 CODE_ENVIRONMENT_DAEMON,
