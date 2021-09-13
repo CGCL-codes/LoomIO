@@ -131,6 +131,9 @@ int main(int argc, const char **argv)
   string device_path;
   std::string dump_pg_log;
 
+
+  int num_args = args.size();
+
   std::string val;
   for (std::vector<const char*>::iterator i = args.begin(); i != args.end(); ) {
     my_args.push_back(*i);
@@ -240,7 +243,7 @@ int main(int argc, const char **argv)
     dout(0)<<"mydebug: argv "<<my_args[i]<<dendl;
   }
 
-  dout(0) << "mydebug: out argv"<< dendl;
+  dout(0) << "mydebug: num_args="<<num_args<< dendl;
 
   string store_type = g_conf->osd_objectstore;
   {
