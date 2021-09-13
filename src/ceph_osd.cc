@@ -108,6 +108,8 @@ int main(int argc, const char **argv)
   // option, therefore we will pass it as a default argument to global_init().
   def_args.push_back("--leveldb-log=");
 
+  dout(0)<<"mydebug: into main "<<dendl;
+
   for(auto i: args)
     dout(0)<<"mydebug: argv "<<string(*i)<<dendl;
 
