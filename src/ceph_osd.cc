@@ -132,7 +132,7 @@ int main(int argc, const char **argv)
 
   std::string val;
   for (std::vector<const char*>::iterator i = args.begin(); i != args.end(); ) {
-    dout(0)<<"mydebug: argv "<< *i << dendl;
+    derr<<"mydebug: argv "<< *i << dendl;
     if (ceph_argparse_double_dash(args, i)) {
       break;
     } else if (ceph_argparse_flag(args, i, "-h", "--help", (char*)NULL)) {
