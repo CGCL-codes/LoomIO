@@ -9546,7 +9546,7 @@ int BlueStore::queue_transactions(
     osr = new OpSequencer(cct, this);
     osr->parent = posr;
     posr->p = osr;
-    dout(0) << __func__ << " new " << osr << " " << *osr << dendl;//change 10->0
+    dout(10) << __func__ << " new " << osr << " " << *osr << dendl;//change 10->0
   }
 
   // prepare

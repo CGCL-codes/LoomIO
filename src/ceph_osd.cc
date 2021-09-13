@@ -236,7 +236,7 @@ int main(int argc, const char **argv)
   // the store
   dout(0) << "mydebug: in the store"<< dendl;
 
-  for(int i=0;i<args.size();i++){
+  for(int i=0;i<my_args.size();i++){
     dout(0)<<"mydebug: argv "<<my_args[i]<<dendl;
   }
 
