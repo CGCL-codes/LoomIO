@@ -107,14 +107,7 @@ int main(int argc, const char **argv)
   // We want to enable leveldb's log, while allowing users to override this
   // option, therefore we will pass it as a default argument to global_init().
   def_args.push_back("--leveldb-log=");
-
-  dout(0) << "mydebug: in the main"<< dendl;
-
-  // for(int i=0;i<args.size();i++){
-  //   dout(0)<<"mydebug: argv "<<args[i]<<dendl;
-  // }
     
-
   auto cct = global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
 			 CODE_ENVIRONMENT_DAEMON,
 			 0, "osd_data");
@@ -179,6 +172,10 @@ int main(int argc, const char **argv)
   if (!args.empty()) {
     derr << "unrecognized arg " << args[0] << dendl;
     usage();
+  }
+
+  for(int i=0;i<args.size();i++){
+    dout(0)<<"mydebug: argv "<<args[i]<<dendl;
   }
 
   if (get_journal_fsid) {
