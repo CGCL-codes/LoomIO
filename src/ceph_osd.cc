@@ -174,10 +174,7 @@ int main(int argc, const char **argv)
     usage();
   }
 
-  for(int i=0;i<args.size();i++){
-    dout(0)<<"mydebug: argv "<<args[i]<<dendl;
-  }
-
+  
   if (get_journal_fsid) {
     device_path = g_conf->osd_journal;
     get_device_fsid = true;
@@ -236,6 +233,13 @@ int main(int argc, const char **argv)
 
   // the store
   dout(0) << "mydebug: in the store"<< dendl;
+
+  for(int i=0;i<args.size();i++){
+    dout(0)<<"mydebug: argv "<<args[i]<<dendl;
+  }
+
+  dout(0) << "mydebug: out argv"<< dendl;
+
   string store_type = g_conf->osd_objectstore;
   {
     char fn[PATH_MAX];
