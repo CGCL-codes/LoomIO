@@ -44,16 +44,18 @@ CephContext *common_preinit(const CephInitParameters &iparams,
   // in these locations.  the mon already forces $mon_data/keyring.
   if (conf->name.is_mds()) {
     conf->set_val("keyring", "$mds_data/keyring", false);
-  } else if (conf->name.is_osd()) {
+  } else if (conf->name.is_osd()) {//这个会用到，设置keyring
     conf->set_val("keyring", "$osd_data/keyring", false);
   }
 
+  //这个用不到
   if (code_env == CODE_ENVIRONMENT_LIBRARY ||
       code_env == CODE_ENVIRONMENT_UTILITY_NODOUT) {
     conf->set_val_or_die("log_to_stderr", "false");
     conf->set_val_or_die("err_to_stderr", "false");
     conf->set_val_or_die("log_flush_on_exit", "false");
   }
+  //这个也用不到
   if (code_env != CODE_ENVIRONMENT_DAEMON) {
     // NOTE: disable ms subsystem gathering in clients by default
     conf->set_val_or_die("debug_ms", "0/0");

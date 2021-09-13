@@ -287,10 +287,14 @@ int greenfs_global_pre_init(std::vector < const char * > *alt_def_args,
 {
   std::string conf_file_list;
   std::string cluster = "";
+  //iparams:  entity_type,name
+  //ceph_argparse_early_args只根据module_type填充了iparams,cluster和conf_file_list都不变
   CephInitParameters iparams = ceph_argparse_early_args(args, module_type,
 							&cluster, &conf_file_list);
   CephContext *cct = common_preinit(iparams, code_env, flags);
   cct->_conf->cluster = cluster;
+  cout<<"cluster:"<<cluster<<std::endl;
+
   global_init_set_globals(cct);
   md_config_t *conf = cct->_conf;
 

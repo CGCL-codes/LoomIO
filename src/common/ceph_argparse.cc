@@ -470,6 +470,7 @@ CephInitParameters ceph_argparse_early_args
 
   vector<const char *> orig_args = args;
 
+  //args是空的，没用
   for (std::vector<const char*>::iterator i = args.begin(); i != args.end(); ) {
     if (strcmp(*i, "--") == 0) {
       /* Normally we would use ceph_argparse_double_dash. However, in this
