@@ -32,6 +32,13 @@ static void global_init_set_globals(CephContext *cct)
   g_conf = cct->_conf;
 }
 
+static const char* c_str_or_null(const std::string &str)
+{
+  if (str.empty())
+    return NULL;
+  return str.c_str();
+}
+
 static int chown_path(const std::string &pathname, const uid_t owner, const gid_t group,
 		      const std::string &uid_str, const std::string &gid_str)
 {
@@ -50,6 +57,15 @@ static int chown_path(const std::string &pathname, const uid_t owner, const gid_
   }
 
   return r;
+}
+
+static void output_ceph_version()
+{
+  char buf[1024];
+  snprintf(buf, sizeof(buf), "%s, process %s, pid %d",
+	   pretty_version_to_str().c_str(),
+	   get_process_name_cpp().c_str(), getpid());
+  generic_dout(0) << buf << dendl;
 }
 
 void greenfs_global_init(std::vector < const char * > *alt_def_args,
@@ -311,4 +327,6 @@ void greenfs_pre_init(std::vector < const char * > *alt_def_args,
 
   // Now we're ready to complain about config file parse errors
   g_conf->complain_about_parse_errors(g_ceph_context);
+
+  return 0;
 }

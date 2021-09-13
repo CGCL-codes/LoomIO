@@ -14,7 +14,7 @@
  * initialization, including setting up g_ceph_context.
  */
 
-void greenfs_global_init(std::vector < const char * > *alt_def_args,
+int greenfs_global_init(std::vector < const char * > *alt_def_args,
 		 std::vector < const char* >& args,
 		 uint32_t module_type,
 		 code_environment_t code_env,
@@ -25,7 +25,7 @@ void greenfs_global_init(std::vector < const char * > *alt_def_args,
 
 // just the first half; enough to get config parsed but doesn't start up the
 // cct or log.
-void greenfs_global_pre_init(std::vector < const char * > *alt_def_args,
+int greenfs_global_pre_init(std::vector < const char * > *alt_def_args,
 		     std::vector < const char* >& args,
 		     uint32_t module_type, code_environment_t code_env,
 		     int flags);
