@@ -23,7 +23,36 @@
 #include <sys/prctl.h>
 #endif
 
-int greenfs_global_init(std::vector < const char * > *alt_def_args,
+#define dout_context g_ceph_context
+#define dout_subsys ceph_subsys_
+
+static void global_init_set_globals(CephContext *cct)
+{
+  g_ceph_context = cct;
+  g_conf = cct->_conf;
+}
+
+static int chown_path(const std::string &pathname, const uid_t owner, const gid_t group,
+		      const std::string &uid_str, const std::string &gid_str)
+{
+  const char *pathname_cstr = c_str_or_null(pathname);
+
+  if (!pathname_cstr) {
+    return 0;
+  }
+
+  int r = ::chown(pathname_cstr, owner, group);
+
+  if (r < 0) {
+    r = -errno;
+    cerr << "warning: unable to chown() " << pathname << " as "
+	 << uid_str << ":" << gid_str << ": " << cpp_strerror(r) << std::endl;
+  }
+
+  return r;
+}
+
+void greenfs_global_init(std::vector < const char * > *alt_def_args,
 	    std::vector < const char* >& args,
 	    uint32_t module_type, code_environment_t code_env,
 	    int flags,
@@ -232,7 +261,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
     exit(1);
   }
 
-  return boost::intrusive_ptr<CephContext>{g_ceph_context, false};
+  return 0;
 }
 
 void greenfs_pre_init(std::vector < const char * > *alt_def_args,
