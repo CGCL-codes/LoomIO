@@ -35,14 +35,6 @@ using namespace std;
 
 #include "include/assert.h"
 
-OSD *osd = NULL;
-
-void handle_osd_signal(int signum)
-{
-  if (osd)
-    osd->handle_signal(signum);
-}
-
 int main(int argc, const char **argv){
 
 vector<const char*> args;

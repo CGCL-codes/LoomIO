@@ -280,7 +280,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
   return 0;
 }
 
-int greenfs_pre_init(std::vector < const char * > *alt_def_args,
+int greenfs_global_pre_init(std::vector < const char * > *alt_def_args,
 		     std::vector < const char* >& args,
 		     uint32_t module_type, code_environment_t code_env,
 		     int flags)
