@@ -100,6 +100,7 @@ static void usage()
 int main(int argc, const char **argv)
 {
   vector<const char*> args;
+  vector<const char*> my_args;
   argv_to_vec(argc, argv, args);
   env_to_vec(args);
 
@@ -132,7 +133,7 @@ int main(int argc, const char **argv)
 
   std::string val;
   for (std::vector<const char*>::iterator i = args.begin(); i != args.end(); ) {
-    derr<<"mydebug: argv "<< *i << dendl;
+    my_args.push_back(*i);
     if (ceph_argparse_double_dash(args, i)) {
       break;
     } else if (ceph_argparse_flag(args, i, "-h", "--help", (char*)NULL)) {
@@ -236,7 +237,7 @@ int main(int argc, const char **argv)
   dout(0) << "mydebug: in the store"<< dendl;
 
   for(int i=0;i<args.size();i++){
-    dout(0)<<"mydebug: argv "<<args[i]<<dendl;
+    dout(0)<<"mydebug: argv "<<my_args[i]<<dendl;
   }
 
   dout(0) << "mydebug: out argv"<< dendl;
