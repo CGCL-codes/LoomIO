@@ -34,8 +34,29 @@ using namespace std;
 
 #include "include/assert.h"
 
+OSD *osd = NULL;
+
+void handle_osd_signal(int signum)
+{
+  if (osd)
+    osd->handle_signal(signum);
+}
+
+int test_bool(int a, int b, bool c)
+{
+    cout<<"c="<<c<<dend;
+}
+
 int main(int args, char** argv){
 
-  
+vector<const char*> args;
+vector<const char*> def_args;
+def_args.push_back("--leveldb-log=");
+
+test_bool(1,2);
+
+auto cct = global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
+			 CODE_ENVIRONMENT_DAEMON,
+			 0, "osd_data");
 
 }
