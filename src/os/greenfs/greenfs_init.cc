@@ -68,7 +68,7 @@ static void output_ceph_version()
   generic_dout(0) << buf << dendl;
 }
 
-void greenfs_global_init(std::vector < const char * > *alt_def_args,
+int greenfs_global_init(std::vector < const char * > *alt_def_args,
 	    std::vector < const char* >& args,
 	    uint32_t module_type, code_environment_t code_env,
 	    int flags,
@@ -280,7 +280,7 @@ void greenfs_global_init(std::vector < const char * > *alt_def_args,
   return 0;
 }
 
-void greenfs_pre_init(std::vector < const char * > *alt_def_args,
+int greenfs_pre_init(std::vector < const char * > *alt_def_args,
 		     std::vector < const char* >& args,
 		     uint32_t module_type, code_environment_t code_env,
 		     int flags)
