@@ -34,8 +34,10 @@ static void global_init_set_globals(CephContext *cct)
 
 static const char* c_str_or_null(const std::string &str)
 {
-  if (str.empty())
-    return NULL;
+  if (str.empty()){
+      cout<<"empty config file"<<endl;
+      return NULL;
+  }
   return str.c_str();
 }
 
