@@ -293,18 +293,20 @@ int greenfs_global_pre_init(std::vector < const char * > *alt_def_args,
 							&cluster, &conf_file_list);
   CephContext *cct = common_preinit(iparams, code_env, flags);
   cct->_conf->cluster = cluster;
-  cout<<"cluster:"<<cluster<<std::endl;
-
+  //输出cluster为空
+  //cout<<"cluster:"<<cluster<<std::endl;
+  //初始化全局的那两个变量
   global_init_set_globals(cct);
   md_config_t *conf = cct->_conf;
 
-  if (alt_def_args)
+  if (alt_def_args)//这个没用
     conf->parse_argv(*alt_def_args);  // alternative default args
 
+  //conf_file_list是空的，会将clustername变成ceph
   int ret = conf->parse_config_files(c_str_or_null(conf_file_list),
 				     &cout, flags);
   if (ret == -EDOM) {
-    dout_emergency("global_init: error parsing config file.\n");
+    cout<<"global_init: error parsing config file.\n"<<std::endl;
     _exit(1);
   }
   else if (ret == -ENOENT) {
@@ -313,23 +315,25 @@ int greenfs_global_pre_init(std::vector < const char * > *alt_def_args,
 	ostringstream oss;
 	oss << "global_init: unable to open config file from search list "
 	    << conf_file_list << "\n";
-        dout_emergency(oss.str());
+        cout<<oss.str()<<std::endl;
         _exit(1);
       } else {
-        derr << "did not load config file, using default settings." << dendl;
+        cout<< "did not load config file, using default settings." << std::endl;
       }
     }
   }
   else if (ret) {
-    dout_emergency("global_init: error reading config file.\n");
+    cout<<"global_init: error reading config file.\n"<<std::endl;
     _exit(1);
   }
 
+  //设置keyring为ceph_keyring
   conf->parse_env(); // environment variables override
-
+  //根据args覆盖conf中的一些参数
   conf->parse_argv(args); // argv override
 
   // Now we're ready to complain about config file parse errors
+  //这个主要输出md_config_t中的parse_errors中的string
   g_conf->complain_about_parse_errors(g_ceph_context);
 
   return 0;
