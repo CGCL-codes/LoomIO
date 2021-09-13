@@ -130,6 +130,10 @@ int main(int argc, const char **argv)
   string device_path;
   std::string dump_pg_log;
 
+  for(int i=0;i<args.size();i++){
+    dout(0)<<"mydebug: argv "<<args[i]<<dendl;
+  }
+
   std::string val;
   for (std::vector<const char*>::iterator i = args.begin(); i != args.end(); ) {
     if (ceph_argparse_double_dash(args, i)) {
