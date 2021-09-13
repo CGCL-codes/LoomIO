@@ -25,6 +25,7 @@ using namespace std;
 
 #include "global/global_init.h"
 #include "global/signal_handler.h"
+#include "greenfs_init.h"
 
 #include "include/color.h"
 #include "common/errno.h"
@@ -42,21 +43,17 @@ void handle_osd_signal(int signum)
     osd->handle_signal(signum);
 }
 
-int test_bool(int a, int b, bool c)
-{
-    cout<<"c="<<c<<dend;
-}
-
 int main(int args, char** argv){
 
 vector<const char*> args;
 vector<const char*> def_args;
 def_args.push_back("--leveldb-log=");
 
-test_bool(1,2);
+greenfs_global_pre_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
+			 CODE_ENVIRONMENT_DAEMON);
 
-auto cct = global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
-			 CODE_ENVIRONMENT_DAEMON,
-			 0, "osd_data");
+// greenfs_global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
+// 			 CODE_ENVIRONMENT_DAEMON,
+// 			 0, "osd_data");
 
 }
