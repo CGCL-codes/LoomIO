@@ -130,7 +130,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
 	   << " since I am not root" << std::endl;
     }
   } else if (g_conf->setgroup.length() ||
-             g_conf->setuser.length()) {
+             g_conf->setuser.length()) {//不是root直接跳过，并且也不需要设置
     uid_t uid = 0;  // zero means no change; we can only drop privs here.
     gid_t gid = 0;
     std::string uid_string;
@@ -230,6 +230,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
   }
 
 #if defined(HAVE_SYS_PRCTL_H)
+  cout << "have SYS_PRCTL_H"<< std::endl;
   if (prctl(PR_SET_DUMPABLE, 1) == -1) {
     cout << "warning: unable to set dumpable flag: " << cpp_strerror(errno) << std::endl;
   }
