@@ -41,11 +41,11 @@ vector<const char*> args;
 vector<const char*> def_args;
 def_args.push_back("--leveldb-log=");
 
-greenfs_global_pre_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
-			 CODE_ENVIRONMENT_DAEMON,0);
+// greenfs_global_pre_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
+// 			 CODE_ENVIRONMENT_DAEMON,0);
 
-// greenfs_global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
-// 			 CODE_ENVIRONMENT_DAEMON,
-// 			 0, "osd_data");
+greenfs_global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
+			 CODE_ENVIRONMENT_DAEMON,
+			 0, "osd_data");
 
 }
