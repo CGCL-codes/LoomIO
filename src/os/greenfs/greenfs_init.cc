@@ -99,7 +99,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
   block_signals(siglist, NULL);
 
   if (g_conf->fatal_signal_handlers){
-      cout<<"install_standard_sighandlers!"<<std::endl;
+      cout<<"install_standard_sighandlers"<<std::endl;
       install_standard_sighandlers();
   }
     
