@@ -231,7 +231,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
 
 #if defined(HAVE_SYS_PRCTL_H)
   cout << "have SYS_PRCTL_H"<< std::endl;
-  if (prctl(PR_SET_DUMPABLE, 1) == -1) {
+  if (prctl(PR_SET_DUMPABLE, 1) == -1) {//用于线程命名
     cout << "warning: unable to set dumpable flag: " << cpp_strerror(errno) << std::endl;
   }
 #endif
