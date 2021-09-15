@@ -110,7 +110,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
     cout<<"log_flush_on_exit"<<std::endl;
     g_ceph_context->_log->set_flush_on_exit();
   }else{
-    cout<<"dont log_flush_on_exit"<<std::endl;
+    cout<<"dont log_flush_on_exit!"<<std::endl;
   }
     
 
