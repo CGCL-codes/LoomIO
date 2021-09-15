@@ -99,13 +99,20 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
   block_signals(siglist, NULL);
 
   if (g_conf->fatal_signal_handlers){
-      cout<<"install_standard_sighandlers"<<std::endl;
-      install_standard_sighandlers();
+    cout<<"install_standard_sighandlers"<<std::endl;
+    install_standard_sighandlers();
+  }else{
+    cout<<"dont install_standard_sighandlers"<<std::endl;
   }
     
 
-  if (g_conf->log_flush_on_exit)
+  if (g_conf->log_flush_on_exit){
+    cout<<"log_flush_on_exit"<<std::endl;
     g_ceph_context->_log->set_flush_on_exit();
+  }else{
+    cout<<"dont log_flush_on_exit"<<std::endl;
+  }
+    
 
   // drop privileges?
   ostringstream priv_ss;
