@@ -98,8 +98,11 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
   int siglist[] = { SIGPIPE, 0 };
   block_signals(siglist, NULL);
 
-  if (g_conf->fatal_signal_handlers)
-    install_standard_sighandlers();
+  if (g_conf->fatal_signal_handlers){
+      cout<<"install_standard_sighandlers"<<std::endl;
+      install_standard_sighandlers();
+  }
+    
 
   if (g_conf->log_flush_on_exit)
     g_ceph_context->_log->set_flush_on_exit();
