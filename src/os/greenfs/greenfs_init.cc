@@ -119,7 +119,8 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
   ostringstream priv_ss;
  
   // consider --setuser root a no-op, even if we're not root
-  if (getuid() != 0) {
+  if (getuid() != 0) {//如果不是root，跳过setuser和setgroup
+    cout<<"uid="<<getuid()<<std::endl;
     if (g_conf->setuser.length()) {
       cout << "ignoring --setuser " << g_conf->setuser << " since I am not root"
 	   << std::endl;
