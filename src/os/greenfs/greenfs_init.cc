@@ -77,6 +77,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
 	    const char *data_dir_option, bool run_pre_init)
 {
   // Ensure we're not calling the global init functions multiple times.
+  cout<<"in global init"<<std::endl;
   static bool first_run = true;
   if (run_pre_init) {
     // We will run pre_init from here (default).
