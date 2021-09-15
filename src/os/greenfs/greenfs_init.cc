@@ -231,7 +231,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
 
 #if defined(HAVE_SYS_PRCTL_H)
   cout << "have SYS_PRCTL_H"<< std::endl;
-  if (prctl(PR_SET_DUMPABLE, 1) == -1) {//用于线程命名
+  if (prctl(PR_SET_DUMPABLE, 1) == -1) {//用于开启核心转储，目前没有太多的用户粗
     cout << "warning: unable to set dumpable flag: " << cpp_strerror(errno) << std::endl;
   }
 #endif
@@ -246,6 +246,8 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
     if (r < 0 && errno != EEXIST) {
       cout << "warning: unable to create " << g_conf->run_dir << ": " << cpp_strerror(errno) << std::endl;
     }
+  }else{
+    cout<<"null g_conf->run_dir"<<std::endl;
   }
 
   register_assert_context(g_ceph_context);
