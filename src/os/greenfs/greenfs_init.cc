@@ -243,6 +243,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
       code_env == CODE_ENVIRONMENT_DAEMON &&
       !(flags & CINIT_FLAG_NO_DAEMON_ACTIONS)) {
     int r = ::mkdir(g_conf->run_dir.c_str(), 0755);
+    cout<<"mkdir "<<g_conf->run_dir.c_str()<<std::endl;
     if (r < 0 && errno != EEXIST) {
       cout << "warning: unable to create " << g_conf->run_dir << ": " << cpp_strerror(errno) << std::endl;
     }
