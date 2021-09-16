@@ -36,25 +36,65 @@ using namespace std;
 
 #include "include/assert.h"
 
+static void usage()
+{
+	cout<<"greefs usage:"<<std::endl;
+}
+
 int main(int argc, const char **argv){
 
-vector<const char*> args;
-vector<const char*> def_args;
-def_args.push_back("--leveldb-log=");
+	vector<const char*> args;
+	vector<const char*> def_args;
+	def_args.push_back("--leveldb-log=");
 
-// greenfs_global_pre_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
-// 			 CODE_ENVIRONMENT_DAEMON,0);
+	// greenfs_global_pre_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
+	// 			 CODE_ENVIRONMENT_DAEMON,0);
 
-greenfs_global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
-			 CODE_ENVIRONMENT_DAEMON,
-			 0, "osd_data");
+	greenfs_global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
+				CODE_ENVIRONMENT_DAEMON,
+				0, "osd_data");
 
+	//下面这个if是用来判断ceph_heap_profiler_init是否执行的
+	if (get_env_bool("CEPH_HEAP_PROFILER_INIT")) {
+		cout<<"CEPH_HEAP_PROFILER_INIT==1"<<std::endl;
+	}else{
+		cout<<"CEPH_HEAP_PROFILER_INIT==0"<<std::endl;
+	}
+	ceph_heap_profiler_init();//根据输出，由于CEPH_HEAP_PROFILER_INIT为0，所以不执行
 
-if (get_env_bool("CEPH_HEAP_PROFILER_INIT")) {
-	cout<<"CEPH_HEAP_PROFILER_INIT==1"<<std::endl;
-}else{
-	cout<<"CEPH_HEAP_PROFILER_INIT==0"<<std::endl;
-}
-ceph_heap_profiler_init();
+	// osd specific args
+	//由于无输入，这些参数最后都是false
+	bool mkfs = false;
+	bool mkjournal = false;
+	bool check_wants_journal = false;
+	bool check_allows_journal = false;
+	bool check_needs_journal = false;
+	bool mkkey = false;
+	bool flushjournal = false;
+	bool dump_journal = false;
+	bool convertfilestore = false;
+	bool get_osd_fsid = false;
+	bool get_cluster_fsid = false;
+	bool get_journal_fsid = false;
+	bool get_device_fsid = false;
+	string device_path;
+	std::string dump_pg_log;
+
+	// whoami
+	//理论上说因为我们没有create osd，所以这个部分应该是找不到的
+	char *end;
+	const char *id = g_conf->name.get_id().c_str();
+	if(g_conf->name.get_id())
+		cout<<"id:"<<g_conf->name.get_id()<<std::endl;
+	int whoami = strtol(id, &end, 10);
+	if (*end || end == id || whoami < 0) {
+		cout << "must specify '-i #' where # is the osd number" << std::endl;
+		usage();
+	}
+
+	if (g_conf->osd_data.empty()) {
+		cout << "must specify '--osd-data=foo' data path" << std::endl;
+		usage();
+	}
 
 }
