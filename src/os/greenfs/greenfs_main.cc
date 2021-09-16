@@ -83,9 +83,10 @@ int main(int argc, const char **argv){
 	// whoami
 	//理论上说因为我们没有create osd，所以这个部分应该是找不到的
 	char *end;
+	cout<<"before get_id"<<std::endl;
 	const char *id = g_conf->name.get_id().c_str();
-	if(g_conf->name.get_id()!=NULL)
-		cout<<"id:"<<g_conf->name.get_id()<<std::endl;
+	// if(g_conf->name.get_id()!=NULL)
+	cout<<"id:"<<g_conf->name.get_id()<<std::endl;
 	int whoami = strtol(id, &end, 10);
 	if (*end || end == id || whoami < 0) {
 		cout << "must specify '-i #' where # is the osd number" << std::endl;
