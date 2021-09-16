@@ -64,10 +64,12 @@ static int chown_path(const std::string &pathname, const uid_t owner, const gid_
 static void output_ceph_version()
 {
   char buf[1024];
+  cout<<"into output_ceph_version"<<std::endl;
   snprintf(buf, sizeof(buf), "%s, process %s, pid %d",
 	   pretty_version_to_str().c_str(),
 	   get_process_name_cpp().c_str(), getpid());
   cout << buf << std::endl;
+  cout<<"outof output_ceph_version"<<std::endl;
 }
 
 int greenfs_global_init(std::vector < const char * > *alt_def_args,
