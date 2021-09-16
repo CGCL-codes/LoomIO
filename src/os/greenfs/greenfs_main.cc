@@ -22,6 +22,7 @@ using namespace std;
 #include "common/Timer.h"
 #include "common/TracepointProvider.h"
 #include "common/ceph_argparse.h"
+#include "common/environment.h"
 
 #include "global/global_init.h"
 #include "global/signal_handler.h"
