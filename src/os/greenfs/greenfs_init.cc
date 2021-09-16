@@ -258,7 +258,9 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
   g_conf->call_all_observers();
 
   if (priv_ss.str().length()) {
-    dout(0) << priv_ss.str() << dendl;
+    cout << priv_ss.str() << std::endl;
+  }else{
+    cout << "null priv_ss" << std::endl;
   }
 
   if ((flags & CINIT_FLAG_DEFER_DROP_PRIVILEGES) &&
@@ -274,6 +276,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
     g_ceph_context->_log->chown_log_file(
       g_ceph_context->get_set_uid(),
       g_ceph_context->get_set_gid());
+    cout<<"chown run_dir & log_file "<<g_ceph_context->get_set_uid_string()<<":"<<g_ceph_context->get_set_gid_string()<<std::endl;
   }
 
   // Now we're ready to complain about config file parse errors
