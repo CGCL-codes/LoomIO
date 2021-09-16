@@ -67,7 +67,7 @@ static void output_ceph_version()
   snprintf(buf, sizeof(buf), "%s, process %s, pid %d",
 	   pretty_version_to_str().c_str(),
 	   get_process_name_cpp().c_str(), getpid());
-  generic_dout(0) << buf << dendl;
+  cout << buf << std::endl;
 }
 
 int greenfs_global_init(std::vector < const char * > *alt_def_args,
@@ -284,7 +284,7 @@ int greenfs_global_init(std::vector < const char * > *alt_def_args,
 
   // test leak checking
   if (g_conf->debug_deliberately_leak_memory) {
-    derr << "deliberately leaking some memory" << dendl;
+    cout << "deliberately leaking some memory" << std::endl;
     char *s = new char[1234567];
     (void)s;
     // cppcheck-suppress memleak
