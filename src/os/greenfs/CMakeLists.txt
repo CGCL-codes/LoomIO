@@ -1,5 +1,6 @@
 set(greenfs 
 greenfs_main.cc
+greenfs_init.cc
 )
 add_executable(greenfs ${greenfs})
 target_link_libraries(greenfs global osd os global-static common
