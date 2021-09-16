@@ -3,5 +3,5 @@ greenfs_main.cc
 greenfs_init.cc
 )
 add_executable(greenfs ${greenfs})
-target_link_libraries(greenfs global osd 
+target_link_libraries(greenfs global-static osd 
   ${BLKID_LIBRARIES} ${CMAKE_DL_LIBS} ${AIO_LIBRARIES})
