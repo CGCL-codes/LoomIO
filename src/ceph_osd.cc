@@ -235,7 +235,7 @@ int main(int argc, const char **argv)
     derr << "must specify '--osd-data=foo' data path" << dendl;
     usage();
   }
-
+  dout(0) << "mydebug: osd_data path: " <<g_conf->osd_data<< dendl;
   // the store
   dout(0) << "mydebug: in the store"<< dendl;
 
