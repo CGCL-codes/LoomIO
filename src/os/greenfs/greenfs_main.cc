@@ -55,6 +55,6 @@ if (get_env_bool("CEPH_HEAP_PROFILER_INIT")) {
 }else{
 	cout<<"CEPH_HEAP_PROFILER_INIT==0"<<std::endl;
 }
-//ceph_heap_profiler_init();
+ceph_heap_profiler_init();
 
 }
