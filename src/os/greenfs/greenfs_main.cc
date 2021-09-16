@@ -30,6 +30,7 @@ using namespace std;
 #include "include/color.h"
 #include "common/errno.h"
 #include "common/pick_address.h"
+#include "common/environment.h"
 
 #include "perfglue/heap_profiler.h"
 
