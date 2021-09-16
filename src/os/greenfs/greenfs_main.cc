@@ -83,7 +83,7 @@ int main(int argc, const char **argv){
 	// whoami
 	//理论上说因为我们没有create osd，所以这个部分应该是找不到的
 	char *end;
-	cout<<"before get_id"<<std::endl;
+	//cout<<"before get_id"<<std::endl;
 	const char *id = g_conf->name.get_id().c_str();
 	// if(g_conf->name.get_id()!=NULL)
 	cout<<"id:"<<g_conf->name.get_id()<<std::endl;
@@ -96,6 +96,8 @@ int main(int argc, const char **argv){
 	if (g_conf->osd_data.empty()) {
 		cout << "must specify '--osd-data=foo' data path" << std::endl;
 		usage();
+	}else{
+		cout<<"data path:"<<g_conf->osd_data<<std::endl;
 	}
 
 }
