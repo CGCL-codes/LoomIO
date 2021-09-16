@@ -50,9 +50,9 @@ greenfs_global_init(&def_args, args, CEPH_ENTITY_TYPE_OSD,
 			 0, "osd_data");
 
 
-if (get_env_bool("CEPH_HEAP_PROFILER_INIT")) {
-	cout<<"CEPH_HEAP_PROFILER_INIT==1"<<std::endl;
-}
+// if (get_env_bool("CEPH_HEAP_PROFILER_INIT")) {
+// 	cout<<"CEPH_HEAP_PROFILER_INIT==1"<<std::endl;
+// }
 //ceph_heap_profiler_init();
 
 }
