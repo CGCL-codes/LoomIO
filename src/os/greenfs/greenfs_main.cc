@@ -84,7 +84,7 @@ int main(int argc, const char **argv){
 	//理论上说因为我们没有create osd，所以这个部分应该是找不到的
 	char *end;
 	const char *id = g_conf->name.get_id().c_str();
-	if(g_conf->name.get_id())
+	if(g_conf->name.get_id()!=NULL)
 		cout<<"id:"<<g_conf->name.get_id()<<std::endl;
 	int whoami = strtol(id, &end, 10);
 	if (*end || end == id || whoami < 0) {
