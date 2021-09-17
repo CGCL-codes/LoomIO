@@ -86,6 +86,7 @@ int main(int argc, const char **argv){
 	//cout<<"before get_id"<<std::endl;
 	const char *id = g_conf->name.get_id().c_str();
 	// if(g_conf->name.get_id()!=NULL)
+	// id是admin
 	cout<<"id:"<<g_conf->name.get_id()<<std::endl;
 	int whoami = strtol(id, &end, 10);
 	if (*end || end == id || whoami < 0) {
@@ -93,11 +94,27 @@ int main(int argc, const char **argv){
 		usage();
 	}
 
+	//创建bluestore
+	string store_type = "bluestore";
+	g_conf->set_val("osd_objectstore", store_type);
+	//在这直接指定data_path
+	string data_path = "/users/zhang56/greenfs";
+	g_conf->set_val("osd_data", data_path);
 	if (g_conf->osd_data.empty()) {
 		cout << "must specify '--osd-data=foo' data path" << std::endl;
 		usage();
 	}else{
 		cout<<"data path:"<<g_conf->osd_data<<std::endl;
+	}
+	ObjectStore *store = ObjectStore::create(g_ceph_context,
+						store_type,
+						g_conf->osd_data,
+						g_conf->osd_journal,
+											g_conf->osd_os_flags);
+	if (!store) {
+		cout << "unable to create object store" << dendl;
+	}else{
+		cout << "create object store success!" << dendl;
 	}
 
 }
