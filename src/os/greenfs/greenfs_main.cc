@@ -112,9 +112,9 @@ int main(int argc, const char **argv){
 						g_conf->osd_journal,
 											g_conf->osd_os_flags);
 	if (!store) {
-		cout << "unable to create object store" << dendl;
+		cout << "unable to create object store" << std::endl;
 	}else{
-		cout << "create object store success!" << dendl;
+		cout << "create object store success!" << std::endl;
 	}
 
 }
