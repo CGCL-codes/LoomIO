@@ -365,7 +365,7 @@ int global_init_prefork(CephContext *cct)
 
   const md_config_t *conf = cct->_conf;
   if (!conf->daemonize) {
-    dout(0)<<"!!!!conf->daemonize"<<dendl;
+    dout(0)<<"mydebug:!!!!conf->daemonize"<<dendl;
 
     if (pidfile_write(conf) < 0)
       exit(1);
@@ -390,8 +390,11 @@ int global_init_prefork(CephContext *cct)
 
 void global_init_daemonize(CephContext *cct)
 {
-  if (global_init_prefork(cct) < 0)
+  if (global_init_prefork(cct) < 0){
+    dout(0)<<"mydebug: global_init_prefork(cct) < 0"<<dendl;
     return;
+  }
+    
 
 #if !defined(_AIX)
   int ret = daemon(1, 1);
