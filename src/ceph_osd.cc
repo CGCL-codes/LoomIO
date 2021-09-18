@@ -418,6 +418,7 @@ flushjournal_out:
     exit(0);
   }
   
+  //这一步应该是从data_path中读取数据填充magic,cluster_fsid,osd_fsid,w,require_osd_release
   string magic;
   uuid_d cluster_fsid, osd_fsid;
   int require_osd_release = 0;

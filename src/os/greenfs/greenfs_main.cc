@@ -117,4 +117,15 @@ int main(int argc, const char **argv){
 		cout << "create object store success!" << std::endl;
 	}
 
+	//这几个变量不知道后面有没有用
+	string magic;
+	uuid_d cluster_fsid, osd_fsid;
+	int require_osd_release = 0;
+	int w;//w就是who_am_i
+	//peek_meta完全可以不要，由我们手动赋值即可
+	// int r = OSD::peek_meta(store, &magic, &cluster_fsid, &osd_fsid, &w,
+	// 			&require_osd_release);
+
+	
+
 }

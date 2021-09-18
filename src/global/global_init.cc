@@ -365,6 +365,7 @@ int global_init_prefork(CephContext *cct)
 
   const md_config_t *conf = cct->_conf;
   if (!conf->daemonize) {
+    dout(0)<<"!!!!conf->daemonize"<<dendl;
 
     if (pidfile_write(conf) < 0)
       exit(1);
@@ -376,6 +377,8 @@ int global_init_prefork(CephContext *cct)
     }
 
     return -1;
+  }else{
+    dout(0)<<"conf->daemonize"<<dendl;
   }
 
   cct->notify_pre_fork();
