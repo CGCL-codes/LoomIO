@@ -47,3 +47,7 @@ Besides, you can tune the coordination window size with
 	
 	ceph tell osd.* injectargs '--osd_gio_wait_interval xxxx'
 
+
+
+Publications：
+Yusheng Hua, Xuanhua Shi, Kang He, Hai Jin, Wei Xie, Ligang He, Yong Chen，"LoomIO: Object-Level Coordination in Distributed File Systems", IEEE Transactions on Parallel and Distributed Systems, 2021
